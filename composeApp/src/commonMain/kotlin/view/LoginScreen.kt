@@ -23,8 +23,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
@@ -52,7 +54,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -103,6 +107,9 @@ class LoginScreen: Screen {
             )
         )
         var authFail by remember{mutableStateOf<Boolean>(false)}
+        var signUpForm by remember{mutableStateOf<Boolean>(false)}
+        var loading  by remember{ mutableStateOf(false)}
+
 
         val navigator = LocalNavigator.currentOrThrow
         Canvas(
@@ -115,45 +122,48 @@ class LoginScreen: Screen {
             Box(modifier = Modifier.clip(RoundedCornerShape(40.dp))
                 .background(MaterialTheme.colors.background)
                 .fillMaxWidth(0.8F)
-                .aspectRatio(1f)
+                .wrapContentHeight()
                 .align(Alignment.Center)
                 ,
             )
             {
                 Column(
-                    modifier = Modifier.align(Alignment.Center),
+                    modifier = Modifier.align(Alignment.Center).fillMaxWidth(0.8f),
                     horizontalAlignment = Alignment.CenterHorizontally) {
 
                     val composableScope = rememberCoroutineScope()
 
 
+                    Spacer(Modifier.height(20.dp))
 
-                    Text("Login|Register",
-                        style = MaterialTheme.typography.h4,
+
+                    Text(
+                        text = if(!signUpForm)"Login" else "Sign up",
+                        style = MaterialTheme.typography.h3,
                         color = MaterialTheme.colors.primary
                     )
                     var emailText by remember { mutableStateOf("") }
-                    Spacer(Modifier.fillMaxHeight(0.1f))
                     OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(0.8f),
+                        modifier = Modifier.fillMaxWidth(),
                         value = emailText,
                         onValueChange = { emailText = it
                                         authFail = false},
                         colors = if(authFail) TextFieldDefaults.outlinedTextFieldColors(
                             unfocusedBorderColor = Color.Red  )
                         else TextFieldDefaults.outlinedTextFieldColors(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         textStyle = TextStyle(color = MaterialTheme.colors.onBackground),
                         label = { Text("E-mail")},
                         singleLine = true
                     )
                     var passwordText by remember { mutableStateOf("") }
                     var passwordVisible by remember { mutableStateOf(false) }
-                    Spacer(Modifier.fillMaxHeight(0.1f))
                     OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(0.8f),
+                        modifier = Modifier.fillMaxWidth(),
                         value = passwordText,
                         onValueChange = { passwordText = it
                                         authFail = false},
+                        textStyle = TextStyle(color = MaterialTheme.colors.onBackground),
                         label = { Text("Password")},
                         singleLine = true,
                         colors = if(authFail) TextFieldDefaults.outlinedTextFieldColors(
@@ -174,43 +184,96 @@ class LoginScreen: Screen {
                             }
                         }
                     )
+                    var confirmPasswordCorrect by remember { mutableStateOf(true) }
+                    AnimatedVisibility(signUpForm){
+                        Column {
+                            var confirmpasswordText by remember { mutableStateOf("") }
+                            var confirmpasswordVisible by remember { mutableStateOf(false) }
+                            OutlinedTextField(
+                                modifier = Modifier.fillMaxWidth(),
+                                value = confirmpasswordText,
+                                onValueChange = { confirmpasswordText = it
+                                    authFail = false
+                                    confirmPasswordCorrect = (passwordText == confirmpasswordText)},
+                                textStyle = TextStyle(color = MaterialTheme.colors.onBackground),
+                                label = { Text("Confirm password")},
+                                singleLine = true,
+                                colors = if(!confirmPasswordCorrect) TextFieldDefaults.outlinedTextFieldColors(
+                                    unfocusedBorderColor = Color.Red  )
+                                else TextFieldDefaults.outlinedTextFieldColors(),
+                                visualTransformation = if (confirmpasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                trailingIcon = {
+                                    val image = if (confirmpasswordVisible)
+                                        Icons.Filled.KeyboardArrowDown
+                                    else Icons.Filled.KeyboardArrowUp
+
+                                    // Please provide localized description for accessibility services
+                                    val description = if (confirmpasswordVisible) "Hide password" else "Show password"
+
+                                    IconButton(onClick = {confirmpasswordVisible = !confirmpasswordVisible}){
+                                        Icon(imageVector  = image, description)
+                                    }
+                                }
+                            )
+
+                            AnimatedVisibility(!confirmPasswordCorrect){
+                                Text("Password don't match",
+                                    color = Color.Red)
+                            }
+                        }
+
+
+                    }
                     AnimatedVisibility(authFail){
                         Text("Wrong e-mail or password",
                             color = Color.Red)
                     }
-                    Spacer(Modifier.fillMaxHeight(0.1f))
-                    Row(modifier = Modifier.fillMaxWidth(0.8f),
-                        horizontalArrangement = Arrangement.Center){
+                    Spacer(Modifier.height(20.dp))
+                    Box(Modifier.fillMaxWidth().wrapContentHeight()){
                         Button(
-                            modifier = Modifier.wrapContentWidth(),
+                            modifier = Modifier.wrapContentWidth().align(Alignment.CenterEnd),
                             onClick = {
-                                runBlocking {
-                                    launch {
-                                        testSignIn()
-//                                        authCheck()
-                                    }
-                                }
-                            }){
-                            Text("Create new account",
-                                maxLines = 1)
-                        }
-                        Spacer(Modifier.fillMaxWidth(0.05f))
-                        Button(
-                            modifier = Modifier.wrapContentWidth(),
-                            onClick = {
+                                loading = true
                                 authFail = false
                                 composableScope.launch {
-                                    var loginResult = SupabaseService.loginEmail(emailText,passwordText)
-                                    if (loginResult.isSuccess){
-                                        navigator.push(MainScreen())
-                                    }else{
-                                        authFail = true
+                                    if(signUpForm && confirmPasswordCorrect){
+                                        var signUpResult = SupabaseService.signUpEmail(emailText,passwordText)
+                                        if (signUpResult.isSuccess){
+                                            navigator.push(MainScreen())
+                                        }else{
+                                            authFail = true
+                                            loading = false
+                                        }
                                     }
+                                    else{
+                                        var loginResult = SupabaseService.loginEmail(emailText,passwordText)
+                                        if (loginResult.isSuccess){
+                                            navigator.push(MainScreen())
+                                        }else{
+                                            authFail = true
+                                            loading = false
+
+                                        }
+                                    }
+
                                 }
                             }){
-                            Text("Login")
+                            Text(text = if(!loading){if (signUpForm) "Sign up →" else "Login →"} else {"Loading ↻"} )
                         }
                     }
+                    Spacer(Modifier.height(10.dp))
+                    Row{
+                        Text(text = if(signUpForm)"Return to " else "Don't have an account? ")
+                        Text(
+                            modifier = Modifier.clickable { signUpForm = !signUpForm },
+                            text = if (signUpForm) "Login" else "Sign up",
+                            color = MaterialTheme.colors.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Spacer(Modifier.height(20.dp))
+
 
 
                 }
@@ -219,75 +282,10 @@ class LoginScreen: Screen {
 
 
 
-//        Button(onClick = {navigator.push( MainScreen())}){
-//            Text("Login")
-//        }
     }
 }
 
-suspend fun testSignIn(){
 
-    try {
-        val signUpResult = SupabaseService.supabase.auth.signUpWith(Email){
-            email = "keny7503@gmail.com"
-            password = "asda"
-        }
-
-//        if (signUpResult.isSuccessful) {
-//            val user = signUpResult.data.user!!
-//            return
-//        } else {
-//            // Handle sign-up failure
-//            return
-//        }
-
-
-    } catch (e: Exception) {
-        // Handle other exceptions
-        println("Sign up fail")
-        return
-    }
-
-}
-suspend fun login(paseword: String){
-
-    try {
-        val signUpResult = SupabaseService.supabase.auth.signInWith(Email){
-            email = "keny7503@gmail.com"
-            password = paseword
-        }
-
-//        if (signUpResult.isSuccessful) {
-//            val user = signUpResult.data.user!!
-//            return
-//        } else {
-//            // Handle sign-up failure
-//            return
-//        }
-
-//        SupabaseService.supabase.auth.sessionStatus.collect {
-//            when(it) {
-//                is SessionStatus.Authenticated -> println(it.session.user)
-//                SessionStatus.LoadingFromStorage -> println("Loading from storage")
-//                SessionStatus.NetworkError -> println("Network error")
-//                SessionStatus.NotAuthenticated -> println("Not authenticated")
-//            }
-//            repeat(5){
-//                println("In sesson")
-//                delay(2000)
-//            }
-//            return@collect
-//        }
-
-        val session = SupabaseService.supabase.auth.currentSessionOrNull()
-
-    } catch (e: Exception) {
-        // Handle other exceptions
-        println("Login fail")
-        return
-    }
-
-}
 suspend fun authCheck(){
     SupabaseService.supabase.auth.sessionStatus.collect {
         when(it) {

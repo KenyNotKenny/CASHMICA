@@ -25,18 +25,10 @@ class SupabaseService {
 
         suspend fun loginEmail(em: String, pw: String): Result<String>{
             try {
-                val signUpResult = SupabaseService.supabase.auth.signInWith(Email){
+                val loginResult = supabase.auth.signInWith(Email){
                     email = em
                     password = pw
                 }
-
-//        if (signUpResult.isSuccessful) {
-//            val user = signUpResult.data.user!!
-//            return
-//        } else {
-//            // Handle sign-up failure
-//            return
-//        }
 
 //        SupabaseService.supabase.auth.sessionStatus.collect {
 //            when(it) {
@@ -58,6 +50,21 @@ class SupabaseService {
                 // Handle other exceptions
                 println("Login fail")
                 return Result.failure(Exception("Login fail!"))
+            }
+        }
+        suspend fun signUpEmail(em: String, pw: String): Result<String>{
+            try {
+                val signUpResult = supabase.auth.signUpWith(Email){
+                    email = em
+                    password = pw
+                }
+                return Result.success("Sign up success")
+
+
+            } catch (e: Exception) {
+                // Handle other exceptions
+                println("Sign up fail")
+                return Result.failure(Exception("Sign up fail!"))
             }
         }
     }

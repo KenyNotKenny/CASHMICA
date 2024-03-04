@@ -33,6 +33,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import view.LoginScreen
+import view.MainScreen
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
@@ -50,7 +51,7 @@ fun App() {
 
 
     AppTheme {
-        Navigator(screen = LoginScreen())
+        Navigator(screen = MainScreen())
 
 //        val brush = Brush.linearGradient(listOf(Color.Blue, Color.Magenta))
 //        Canvas(
