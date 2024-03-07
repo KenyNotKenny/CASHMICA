@@ -78,3 +78,11 @@ data class Account(
     var email: String,
     var credit: Int
 )
+@Serializable
+data class SummaryPrize(
+    var item_id: Int,
+    var item_name: String,
+    var average_prize: Int,
+    var max_prize: Int,
+    var min_prize: Int
+)

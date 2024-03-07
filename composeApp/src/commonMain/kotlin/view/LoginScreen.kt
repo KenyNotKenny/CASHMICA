@@ -75,7 +75,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import model.SupabaseService
 
-class LoginScreen: Screen {
+class LoginScreen(changeTheme: () -> Unit): Screen {
+    val changeDarkTheme = changeTheme
     @Composable
     override fun Content() {
         val infiniteTransition = rememberInfiniteTransition()
@@ -149,7 +150,7 @@ class LoginScreen: Screen {
                         onValueChange = { emailText = it
                                         authFail = false},
                         colors = if(authFail) TextFieldDefaults.outlinedTextFieldColors(
-                            unfocusedBorderColor = Color.Red  )
+                            unfocusedBorderColor = MaterialTheme.colors.error )
                         else TextFieldDefaults.outlinedTextFieldColors(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         textStyle = TextStyle(color = MaterialTheme.colors.onBackground),
@@ -167,7 +168,7 @@ class LoginScreen: Screen {
                         label = { Text("Password")},
                         singleLine = true,
                         colors = if(authFail) TextFieldDefaults.outlinedTextFieldColors(
-                            unfocusedBorderColor = Color.Red  )
+                            unfocusedBorderColor = MaterialTheme.colors.error )
                         else TextFieldDefaults.outlinedTextFieldColors(),
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -199,7 +200,7 @@ class LoginScreen: Screen {
                                 label = { Text("Confirm password")},
                                 singleLine = true,
                                 colors = if(!confirmPasswordCorrect) TextFieldDefaults.outlinedTextFieldColors(
-                                    unfocusedBorderColor = Color.Red  )
+                                    unfocusedBorderColor = MaterialTheme.colors.error  )
                                 else TextFieldDefaults.outlinedTextFieldColors(),
                                 visualTransformation = if (confirmpasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -219,7 +220,7 @@ class LoginScreen: Screen {
 
                             AnimatedVisibility(!confirmPasswordCorrect){
                                 Text("Password don't match",
-                                    color = Color.Red)
+                                    color = MaterialTheme.colors.error)
                             }
                         }
 
@@ -227,7 +228,7 @@ class LoginScreen: Screen {
                     }
                     AnimatedVisibility(authFail){
                         Text("Wrong e-mail or password",
-                            color = Color.Red)
+                            color = MaterialTheme.colors.error)
                     }
                     Spacer(Modifier.height(20.dp))
                     Box(Modifier.fillMaxWidth().wrapContentHeight()){
@@ -240,7 +241,7 @@ class LoginScreen: Screen {
                                     if(signUpForm && confirmPasswordCorrect){
                                         var signUpResult = SupabaseService.signUpEmail(emailText,passwordText)
                                         if (signUpResult.isSuccess){
-                                            navigator.push(MainScreen())
+                                            navigator.push(MainScreen(changeTheme = {changeDarkTheme()}))
                                         }else{
                                             authFail = true
                                             loading = false
@@ -249,7 +250,7 @@ class LoginScreen: Screen {
                                     else{
                                         var loginResult = SupabaseService.loginEmail(emailText,passwordText)
                                         if (loginResult.isSuccess){
-                                            navigator.push(MainScreen())
+                                            navigator.push(MainScreen(changeTheme = {changeDarkTheme()}))
                                         }else{
                                             authFail = true
                                             loading = false
@@ -264,7 +265,9 @@ class LoginScreen: Screen {
                     }
                     Spacer(Modifier.height(10.dp))
                     Row{
-                        Text(text = if(signUpForm)"Return to " else "Don't have an account? ")
+                        Text(
+                            text = if(signUpForm)"Return to " else "Don't have an account? ",
+                            color = MaterialTheme.colors.onBackground)
                         Text(
                             modifier = Modifier.clickable { signUpForm = !signUpForm },
                             text = if (signUpForm) "Login" else "Sign up",
