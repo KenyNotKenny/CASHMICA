@@ -1,5 +1,6 @@
 package view
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -87,20 +88,28 @@ class MainScreen(changeTheme: () -> Unit): Screen {
 
     @Composable
     override fun Content() {
+
         val brush = Brush.horizontalGradient(listOf(MaterialTheme.colors.primaryVariant,MaterialTheme.colors.primary))
         val navigator = LocalNavigator.currentOrThrow
         val composableScope = rememberCoroutineScope()
         val itemList = remember { mutableStateListOf<SummaryPrize>() }
         var openMenu by remember { mutableStateOf(false) }
+        var itemPanelVisible by remember { mutableStateOf(false) }
         Column{
-            Box(modifier = Modifier.fillMaxWidth().height(100.dp),){
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)){
                 Canvas(
                     modifier = Modifier.fillMaxSize(),
                     onDraw = {
                         drawRect(brush)
                     }
                 )
-                Box(modifier = Modifier.fillMaxWidth().height(70.dp).padding(horizontal = 20.dp).align(Alignment.TopCenter)){
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(70.dp)
+                    .padding(horizontal = 20.dp)
+                    .align(Alignment.TopCenter)){
                     MenuButton(
                         modifier = Modifier.align(Alignment.CenterStart)
                         ,onClick = {
@@ -111,8 +120,8 @@ class MainScreen(changeTheme: () -> Unit): Screen {
                     DropdownMenu(
                         expanded = openMenu,
                         onDismissRequest = { openMenu = false },
-                        modifier = Modifier.width(220.dp).background(
-                            MaterialTheme.colors.background)
+                        modifier = Modifier.width(220.dp)
+                            .background(MaterialTheme.colors.background)
                     ) {
                         menuList.forEachIndexed { index, composable ->
                             DropdownMenuItem(onClick = {
@@ -141,32 +150,33 @@ class MainScreen(changeTheme: () -> Unit): Screen {
 
 
             }
-            Column(
-                modifier = Modifier.fillMaxSize().background(MaterialTheme.colors.surface),
+            Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colors.surface),
             ){
-
                 Spacer(modifier = Modifier.size(20.dp))
-
                 LazyColumn{
                     items(itemList){ item ->
                         Spacer(modifier = Modifier.size(20.dp))
-                        ItemCard(item.item_name,item.average_prize,
-                            navigator = navigator)
-
+                        ItemCard(item, navigator = navigator, onClick = { itemPanelVisible = true })
                     }
                 }
 
             }
         }
-
-        SearchBar(modifier = Modifier.fillMaxWidth().padding(top = 70.dp).clip(RoundedCornerShape(40.dp))){
+        SearchBar(modifier = Modifier.fillMaxWidth()
+            .padding(top = 70.dp)
+            .clip(RoundedCornerShape(40.dp))){
             composableScope.launch{
                 itemList.clear()
-                itemList.addAll(SupabaseService.supabase.from("prize_summary").select(columns = Columns.list("item_id, item_name, average_prize, max_prize, min_prize")).decodeList<SummaryPrize>())
+                itemList.addAll(SupabaseService.supabase
+                    .from("prize_summary")
+                    .select(columns = Columns.list("item_id, item_name, average_prize, max_prize, min_prize"))
+                    .decodeList<SummaryPrize>())
                 println("update list")
             }
         }
-
+//        AnimatedVisibility(itemPanelVisible){
+//            ItemPanel(onClickOut = {itemPanelVisible = false})
+//        }
 
     }
     @Composable
@@ -198,44 +208,56 @@ class MainScreen(changeTheme: () -> Unit): Screen {
         )
     }
     @Composable
-    fun ItemCard(itemName: String, prize: Int, navigator: Navigator){
-        Box(modifier = Modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(30.dp))){
-            Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colors.background)){
+    fun ItemCard(summaryPrize: SummaryPrize,navigator: Navigator, onClick: () -> Unit){
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .height(180.dp)
+            .clip(RoundedCornerShape(30.dp))){
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colors.background)){
                 Row (
                     modifier = Modifier.fillMaxSize(),
                     verticalAlignment = Alignment.CenterVertically) {
-                    Box( modifier = Modifier.fillMaxHeight(1f).aspectRatio(1f)){
-                        Box(modifier =  Modifier.fillMaxSize(0.8f).align(Alignment.Center)
+                    Box( modifier = Modifier
+                        .fillMaxHeight(1f)
+                        .aspectRatio(1f)){
+                        Box(modifier =  Modifier
+                            .fillMaxSize(0.8f)
+                            .align(Alignment.Center)
                             .clip(RoundedCornerShape(20.dp))){
                             Box( modifier =  Modifier.fillMaxSize().background(Color.LightGray)){
                                 Text(text = "Image",
                                     modifier = Modifier.align(Alignment.Center))
                             }
                         }
-
                     }
                     Box(modifier = Modifier.fillMaxSize()){
-                        Box( modifier =  Modifier.fillMaxHeight(0.8f).fillMaxWidth(0.9f).align(
-                            Alignment.Center)){
-                            Text(text = itemName,
+                        Box( modifier =  Modifier
+                            .fillMaxHeight(0.8f)
+                            .fillMaxWidth(0.9f)
+                            .align(Alignment.Center)){
+                            Text(text = summaryPrize.item_name,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 27.sp,
                                 color = MaterialTheme.colors.onBackground
-//
                             )
                             Box(
-                                modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth(0.9f)
+                                modifier = Modifier
+                                    .align(Alignment.BottomStart)
+                                    .fillMaxWidth(0.9f)
                                     .wrapContentHeight()
                             ) {
                                 Text(
                                     modifier = Modifier.align(Alignment.CenterStart),
-                                    text =  prize.addCommas() +" vnđ",
+                                    text =  summaryPrize.average_prize.addCommas() +" vnđ",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 24.sp,
                                     color = MaterialTheme.colors.onBackground
                                 )
 
-                                Button(onClick = { navigator.push(ItemScreen()) },
+                                Button(onClick = { onClick()
+                                                 navigator.push(ItemScreen( summaryPrize = summaryPrize,navigator = navigator))},
                                     modifier= Modifier.size(36.dp).align(Alignment.CenterEnd),  //avoid the oval shape
                                     shape = CircleShape,
                                     contentPadding = PaddingValues(0.dp),  //avoid the little icon
@@ -247,12 +269,8 @@ class MainScreen(changeTheme: () -> Unit): Screen {
                                     Icon(Icons.Default.Add, contentDescription = "More")
                                 }
                             }
-
-
                         }
                     }
-
-
                 }
             }
         }
@@ -298,6 +316,88 @@ class MainScreen(changeTheme: () -> Unit): Screen {
         Text("Sign out")
     }
 
+    val tempList = listOf(1,2,3,4,5,6,7)
+    @Composable
+    fun ItemPanel(onClickOut: () -> Unit) {
+        var expandLowprize by remember { mutableStateOf(false) }
+        Column(modifier = Modifier.fillMaxSize()){
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1.0f)
+                .clickable { onClickOut() }
+            ){
+                Canvas(modifier = Modifier.fillMaxSize(),
+                    onDraw = {
+                        drawRect(Brush.verticalGradient(listOf(Color.Transparent,Color.Black)))
+                    })
+                Box(modifier = Modifier.fillMaxWidth()
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(topEndPercent = 100, topStartPercent = 100))
+                    .align(Alignment.BottomCenter)){
+                    Box(Modifier.background(MaterialTheme.colors.background).fillMaxSize())
+                }
+            }
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colors.background)){
+                Column(modifier = Modifier.fillMaxWidth(0.9f).align(Alignment.TopCenter)) {
+                    Text(
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        text="Ca phe wake up",
+                        fontSize = 30.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colors.onBackground)
+                    Box(modifier = Modifier.fillMaxWidth().height(60.dp)) {
+                        Text(
+                            modifier = Modifier.align(Alignment.CenterStart),
+                            text="Prize:",
+                            fontSize = 30.sp,
+                            color = Color.Gray)
+                        Text(
+                            modifier = Modifier.align(Alignment.CenterEnd),
+                            text="20,000 vnd",
+                            fontSize = 40.sp,
+                            color = MaterialTheme.colors.onBackground)
+                    }
+                    Box(modifier = Modifier.fillMaxWidth().height(60.dp)) {
+                        Text(
+                            modifier = Modifier.align(Alignment.CenterStart)
+                                .clickable { expandLowprize = !expandLowprize  },
+                            text="Lowest ▼",
+                            fontSize = 25.sp,
+                            color = Color.Gray)
+                        Text(
+                            modifier = Modifier.align(Alignment.CenterEnd),
+                            text="15,000 vnd",
+                            fontSize = 30.sp,
+                            color = MaterialTheme.colors.onBackground)
+                    }
+                    AnimatedVisibility(expandLowprize){
+                        LazyColumn {
+                            items(tempList){ listItem ->
+                                Box(modifier = Modifier.fillMaxWidth().height(80.dp)) {
+                                    Text(
+                                        modifier = Modifier.align(Alignment.BottomStart),
+                                        text="placeholder text bla bla bla",
+                                        fontSize = 25.sp,
+                                        color = Color.Gray)
+                                    Text(
+                                        modifier = Modifier.align(Alignment.TopEnd),
+                                        text=""+listItem*2 + ",000 vnd",
+                                        fontSize = 30.sp,
+                                        color = MaterialTheme.colors.onBackground)
+                                }
+                            }
+                        }
+                    }
+
+
+                }
+
+
+            }
+        }
+    }
     fun Int.addCommas(): String {
         val numberString = this.toString()
         val reversedString = numberString.reversed()

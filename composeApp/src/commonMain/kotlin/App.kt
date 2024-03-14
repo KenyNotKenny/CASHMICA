@@ -20,9 +20,6 @@ import cafe.adriel.voyager.navigator.Navigator
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-
-import cashmica.composeapp.generated.resources.Res
-import cashmica.composeapp.generated.resources.logo
 import com.example.compose.AppTheme
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
@@ -56,9 +53,9 @@ fun App() {
     var localDarkTheme by remember { mutableStateOf(temp) }
 
     AppTheme(useDarkTheme = localDarkTheme) {
-        Navigator(screen = ItemScreen())
+//        Navigator(screen = ItemScreen())
 
-//        Navigator(screen = MainScreen(changeTheme = {localDarkTheme = !localDarkTheme}))
+        Navigator(screen = MainScreen(changeTheme = {localDarkTheme = !localDarkTheme}))
 
 //        val brush = Brush.linearGradient(listOf(Color.Blue, Color.Magenta))
 //        Canvas(

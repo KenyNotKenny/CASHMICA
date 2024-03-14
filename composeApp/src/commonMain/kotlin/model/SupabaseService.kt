@@ -8,6 +8,8 @@ import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.PropertyConversionMethod
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 
 class SupabaseService {
@@ -85,4 +87,10 @@ data class SummaryPrize(
     var average_prize: Int,
     var max_prize: Int,
     var min_prize: Int
+)
+@Serializable
+data class EntrytDetail(
+    val seller_id: Int,
+    val price: Int,
+    val expired_date: LocalDate?
 )

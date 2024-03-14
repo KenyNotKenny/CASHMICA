@@ -67,6 +67,7 @@ kotlin {
             implementation("io.github.jan-tennert.supabase:postgrest-kt:$postgrestVersion")
             implementation("io.github.jan-tennert.supabase:gotrue-kt:$gotrueVersion")
 
+            //Corountine
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 
 
