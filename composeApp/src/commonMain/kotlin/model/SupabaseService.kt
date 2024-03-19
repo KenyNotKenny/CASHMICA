@@ -94,3 +94,8 @@ data class EntrytDetail(
     val price: Int,
     val expired_date: LocalDate?
 )
+@Serializable
+data class ItemImage(
+    val id: Int,
+    val image: String?
+)

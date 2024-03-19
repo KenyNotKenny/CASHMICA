@@ -58,52 +58,28 @@ import model.SupabaseService
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import kotlin.random.Random
 
 class LoginScreen(changeTheme: () -> Unit): Screen {
     val changeDarkTheme = changeTheme
+    var randomX = 0.5f
+    var randomY = 0.5f
+    val randomBackground = {
+        randomX = Random.nextFloat()
+        randomY = Random.nextFloat()}
     @OptIn(ExperimentalResourceApi::class)
     @Composable
     override fun Content() {
-        val infiniteTransition = rememberInfiniteTransition()
-        // Creates a Color animation as a part of the [InfiniteTransition].
-        val color by infiniteTransition.animateColor(
-            initialValue = MaterialTheme.colors.primaryVariant,
-            targetValue = MaterialTheme.colors.onPrimary,
-            animationSpec = infiniteRepeatable(
-                // Linearly interpolate between initialValue and targetValue every 1000ms.
-                animation = tween(5000, easing = FastOutSlowInEasing),
-                // Once [TargetValue] is reached, starts the next iteration in reverse (i.e. from
-                // TargetValue to InitialValue). Then again from InitialValue to TargetValue. This
-                // [RepeatMode] ensures that the animation value is *always continuous*.
-                repeatMode = RepeatMode.Reverse
-            )
-        )
-        val colorAlt by infiniteTransition.animateColor(
-            initialValue = MaterialTheme.colors.onPrimary,
-            targetValue = MaterialTheme.colors.primaryVariant,
-//            initialValue = Color(0xFF2200C6),
-//            targetValue = Color(0xFF740EE1),
-            animationSpec = infiniteRepeatable(
-                // Linearly interpolate between initialValue and targetValue every 1000ms.
-                animation = tween(5000, easing = FastOutSlowInEasing),
-                // Once [TargetValue] is reached, starts the next iteration in reverse (i.e. from
-                // TargetValue to InitialValue). Then again from InitialValue to TargetValue. This
-                // [RepeatMode] ensures that the animation value is *always continuous*.
-                repeatMode = RepeatMode.Reverse
-            )
-        )
+
         var authFail by remember{mutableStateOf<Boolean>(false)}
         var signUpForm by remember{mutableStateOf<Boolean>(false)}
         var loading  by remember{ mutableStateOf(false)}
 
 
+
         val navigator = LocalNavigator.currentOrThrow
-        Canvas(
-            modifier = Modifier.fillMaxSize(),
-            onDraw = {
-                drawRect(Brush.linearGradient(listOf(color, colorAlt)))
-            }
-        )
+        println(randomX)
+        BackgroundAnimation(randomX = randomX, randomY= randomY)
         Box (Modifier.fillMaxSize(),){
             Box(modifier = Modifier.clip(RoundedCornerShape(40.dp))
                 .background(MaterialTheme.colors.background)
@@ -133,7 +109,9 @@ class LoginScreen(changeTheme: () -> Unit): Screen {
                         modifier = Modifier.fillMaxWidth(),
                         value = emailText,
                         onValueChange = { emailText = it
-                                        authFail = false},
+                                        authFail = false
+                                        randomBackground()
+                        },
                         colors = if(authFail) TextFieldDefaults.outlinedTextFieldColors(
                             unfocusedBorderColor = MaterialTheme.colors.error )
                         else TextFieldDefaults.outlinedTextFieldColors(),
@@ -148,7 +126,10 @@ class LoginScreen(changeTheme: () -> Unit): Screen {
                         modifier = Modifier.fillMaxWidth(),
                         value = passwordText,
                         onValueChange = { passwordText = it
-                                        authFail = false},
+                                        authFail = false
+                                        randomBackground()
+
+                                        },
                         textStyle = TextStyle(color = MaterialTheme.colors.onBackground),
                         label = { Text("Password")},
                         singleLine = true,

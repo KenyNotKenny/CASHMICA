@@ -36,6 +36,7 @@ kotlin {
     val dateTimeVersion = "0.4.1"
     val postgrestVersion = "2.1.5"
     val gotrueVersion = "2.1.5"
+    val coilVersion ="3.0.0-alpha01"
 
 
     sourceSets {
@@ -75,6 +76,10 @@ kotlin {
             implementation("org.slf4j:slf4j-api:2.0.9" )
             implementation("org.slf4j:slf4j-simple:2.0.9" )
 
+            //Kamel
+            implementation("media.kamel:kamel-image:0.9.3")
+            implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
+
 
         }
         desktopMain.dependencies {
@@ -83,6 +88,8 @@ kotlin {
         }
         iosMain.dependencies {
             implementation("io.ktor:ktor-client-darwin:$ktorVersion")
+
+            implementation("io.ktor:ktor-client-darwin:2.3.7")
         }
         jvmMain.dependencies {
             implementation("io.ktor:ktor-client-java:$ktorVersion")

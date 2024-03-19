@@ -74,6 +74,7 @@ import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import model.ItemImage
 import model.SummaryPrize
 import model.SupabaseService
 
@@ -93,6 +94,7 @@ class MainScreen(changeTheme: () -> Unit): Screen {
         val navigator = LocalNavigator.currentOrThrow
         val composableScope = rememberCoroutineScope()
         val itemList = remember { mutableStateListOf<SummaryPrize>() }
+        val imageList = remember { mutableStateListOf<ItemImage>() }
         var openMenu by remember { mutableStateOf(false) }
         var itemPanelVisible by remember { mutableStateOf(false) }
         Column{
@@ -156,7 +158,7 @@ class MainScreen(changeTheme: () -> Unit): Screen {
                 LazyColumn{
                     items(itemList){ item ->
                         Spacer(modifier = Modifier.size(20.dp))
-                        ItemCard(item, navigator = navigator, onClick = { itemPanelVisible = true })
+                        ItemCard(summaryPrize = item, navigator = navigator, onClick = { itemPanelVisible = true })
                     }
                 }
 
@@ -171,9 +173,17 @@ class MainScreen(changeTheme: () -> Unit): Screen {
                     .from("prize_summary")
                     .select(columns = Columns.list("item_id, item_name, average_prize, max_prize, min_prize"))
                     .decodeList<SummaryPrize>())
+                imageList.clear()
+                imageList.addAll(SupabaseService.supabase
+                    .from("item")
+                    .select(columns = Columns.list("id, image"))
+                    .decodeList<ItemImage>())
                 println("update list")
             }
         }
+//        AnimatedVisibility(itemPanelVisible){
+//            ItemDetail()
+//        }
 //        AnimatedVisibility(itemPanelVisible){
 //            ItemPanel(onClickOut = {itemPanelVisible = false})
 //        }
@@ -186,7 +196,7 @@ class MainScreen(changeTheme: () -> Unit): Screen {
             modifier = modifier,
             colors = TextFieldDefaults.textFieldColors(
                 backgroundColor = MaterialTheme.colors.background,
-                disabledTextColor = Color.Transparent,
+//                disabledTextColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent)
@@ -316,7 +326,7 @@ class MainScreen(changeTheme: () -> Unit): Screen {
         Text("Sign out")
     }
 
-    val tempList = listOf(1,2,3,4,5,6,7)
+    val tempList = mutableListOf(1,2,3,4,5,6,7)
     @Composable
     fun ItemPanel(onClickOut: () -> Unit) {
         var expandLowprize by remember { mutableStateOf(false) }

@@ -17,6 +17,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.transitions.ScaleTransition
+import cafe.adriel.voyager.transitions.SlideTransition
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -40,22 +42,15 @@ import view.MainScreen
 @Preview
 fun App() {
 
-    val supabase = createSupabaseClient(
-        supabaseUrl = "https://pskpouhbuvzeqdhjtfdu.supabase.co",
-        supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBza3BvdWhidXZ6ZXFkaGp0ZmR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDkzMDU2NzEsImV4cCI6MjAyNDg4MTY3MX0.Dayhg5OljEZ0mX4mDG8YkWvdmi3wwBystnRr4i0PnqE"
-    ) {
-        install(Postgrest) {
-            defaultSchema = "public" // default: "public"
-            propertyConversionMethod = PropertyConversionMethod.CAMEL_CASE_TO_SNAKE_CASE // default: PropertyConversionMethod.CAMEL_CASE_TO_SNAKE_CASE
-        }
-    }
     var temp = isSystemInDarkTheme()
     var localDarkTheme by remember { mutableStateOf(temp) }
 
     AppTheme(useDarkTheme = localDarkTheme) {
 //        Navigator(screen = ItemScreen())
 
-        Navigator(screen = MainScreen(changeTheme = {localDarkTheme = !localDarkTheme}))
+        Navigator(screen = MainScreen(changeTheme = {localDarkTheme = !localDarkTheme})){navigator ->
+            ScaleTransition(navigator)
+        }
 
 //        val brush = Brush.linearGradient(listOf(Color.Blue, Color.Magenta))
 //        Canvas(
