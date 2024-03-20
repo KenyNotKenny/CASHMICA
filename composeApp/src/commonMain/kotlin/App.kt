@@ -48,7 +48,7 @@ fun App() {
     AppTheme(useDarkTheme = localDarkTheme) {
 //        Navigator(screen = ItemScreen())
 
-        Navigator(screen = MainScreen(changeTheme = {localDarkTheme = !localDarkTheme})){navigator ->
+        Navigator(screen = LoginScreen(changeTheme = {localDarkTheme = !localDarkTheme})){navigator ->
             ScaleTransition(navigator)
         }
 

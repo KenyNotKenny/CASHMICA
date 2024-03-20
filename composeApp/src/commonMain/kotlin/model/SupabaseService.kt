@@ -25,6 +25,18 @@ class SupabaseService {
             install(Auth)
         }
 
+        val supabaseAlt = createSupabaseClient(
+            supabaseUrl = "https://zvukdugznrucavucofvn.supabase.co",
+            supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2dWtkdWd6bnJ1Y2F2dWNvZnZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTA4OTU2MTMsImV4cCI6MjAyNjQ3MTYxM30.oT92ZKhAYZDxQqkWHMGMnKyyvxXyKcbAGo9rmp4Kw-Y"
+        ) {
+            install(Postgrest) {
+                defaultSchema = "public" // default: "public"
+                propertyConversionMethod = PropertyConversionMethod.CAMEL_CASE_TO_SNAKE_CASE // default: PropertyConversionMethod.CAMEL_CASE_TO_SNAKE_CASE
+            }
+            install(Auth)
+        }
+
+
         suspend fun loginEmail(em: String, pw: String): Result<String>{
             try {
                 val loginResult = supabase.auth.signInWith(Email){
@@ -98,4 +110,16 @@ data class EntrytDetail(
 data class ItemImage(
     val id: Int,
     val image: String?
+)
+@Serializable
+data class Seller(
+    val id: Int,
+    val name: String,
+    val address: String?,
+    val link: String?,
+)
+@Serializable
+data class Test(
+    val id: Int,
+    val name: String,
 )
