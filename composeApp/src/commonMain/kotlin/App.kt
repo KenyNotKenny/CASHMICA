@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.transitions.FadeTransition
 import cafe.adriel.voyager.transitions.ScaleTransition
 import cafe.adriel.voyager.transitions.SlideTransition
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -34,6 +35,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import view.ItemScreen
+import view.LoadingScreen
 import view.LoginScreen
 import view.MainScreen
 
@@ -48,9 +50,14 @@ fun App() {
     AppTheme(useDarkTheme = localDarkTheme) {
 //        Navigator(screen = ItemScreen())
 
-        Navigator(screen = LoginScreen(changeTheme = {localDarkTheme = !localDarkTheme})){navigator ->
-            ScaleTransition(navigator)
+        Navigator(screen = LoadingScreen(changeTheme = {localDarkTheme = !localDarkTheme})){navigator ->
+            FadeTransition(navigator)
         }
+
+
+
+
+
 
 //        val brush = Brush.linearGradient(listOf(Color.Blue, Color.Magenta))
 //        Canvas(

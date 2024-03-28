@@ -58,15 +58,9 @@ import model.SupabaseService
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
-import kotlin.random.Random
-
 class LoginScreen(changeTheme: () -> Unit): Screen {
     val changeDarkTheme = changeTheme
-    var randomX = 0.5f
-    var randomY = 0.5f
-    val randomBackground = {
-        randomX = Random.nextFloat()
-        randomY = Random.nextFloat()}
+
     @OptIn(ExperimentalResourceApi::class)
     @Composable
     override fun Content() {
@@ -78,8 +72,7 @@ class LoginScreen(changeTheme: () -> Unit): Screen {
 
 
         val navigator = LocalNavigator.currentOrThrow
-        println(randomX)
-        BackgroundAnimation(randomX = randomX, randomY= randomY)
+        BackgroundAnimation()
         Box (Modifier.fillMaxSize(),){
             Box(modifier = Modifier.clip(RoundedCornerShape(40.dp))
                 .background(MaterialTheme.colors.background)
@@ -104,13 +97,26 @@ class LoginScreen(changeTheme: () -> Unit): Screen {
                         style = MaterialTheme.typography.h3,
                         color = MaterialTheme.colors.primary
                     )
+                    var displayNameText by remember { mutableStateOf("") }
+                    AnimatedVisibility(signUpForm){
+                        OutlinedTextField(
+                            modifier = Modifier.fillMaxWidth(),
+                            value = displayNameText,
+                            onValueChange = { displayNameText = it
+                            },
+                            colors = TextFieldDefaults.outlinedTextFieldColors(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                            textStyle = TextStyle(color = MaterialTheme.colors.onBackground),
+                            label = { Text("Display name")},
+                            singleLine = true
+                        )
+                    }
                     var emailText by remember { mutableStateOf("") }
                     OutlinedTextField(
                         modifier = Modifier.fillMaxWidth(),
                         value = emailText,
                         onValueChange = { emailText = it
                                         authFail = false
-                                        randomBackground()
                         },
                         colors = if(authFail) TextFieldDefaults.outlinedTextFieldColors(
                             unfocusedBorderColor = MaterialTheme.colors.error )
@@ -127,7 +133,7 @@ class LoginScreen(changeTheme: () -> Unit): Screen {
                         value = passwordText,
                         onValueChange = { passwordText = it
                                         authFail = false
-                                        randomBackground()
+
 
                                         },
                         textStyle = TextStyle(color = MaterialTheme.colors.onBackground),
@@ -205,7 +211,7 @@ class LoginScreen(changeTheme: () -> Unit): Screen {
                                 authFail = false
                                 composableScope.launch {
                                     if(signUpForm && confirmPasswordCorrect){
-                                        var signUpResult = SupabaseService.signUpEmail(emailText,passwordText)
+                                        var signUpResult = SupabaseService.signUpEmail(emailText,passwordText,displayNameText)
                                         if (signUpResult.isSuccess){
                                             navigator.push(MainScreen(changeTheme = {changeDarkTheme()}))
                                         }else{

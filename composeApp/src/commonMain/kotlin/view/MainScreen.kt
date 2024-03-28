@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -23,15 +22,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
@@ -39,8 +35,6 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
@@ -58,10 +52,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
@@ -72,8 +62,12 @@ import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.user.UserInfo
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
+import io.ktor.util.Identity.decode
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.decodeFromJsonElement
 import model.ItemImage
 import model.SummaryPrize
 import model.SupabaseService
@@ -85,7 +79,20 @@ class MainScreen(changeTheme: () -> Unit): Screen {
         {DarkThemeToggle()},
         {SignOutButton()}
     )
+    var userInfo: UserInfo? = null
+    var userName: String? = null
+    var cashmicoin: Int = 0
 
+    init {
+        runBlocking {
+            launch {
+                userInfo = SupabaseService.getCurrentUser()
+                userName = userInfo?.userMetadata?.get("display_name").toString()
+                cashmicoin =  Json.decodeFromJsonElement(userInfo?.userMetadata?.get("cashmicoin")!!)
+
+            }
+        }
+    }
 
     @Composable
     override fun Content() {
@@ -137,6 +144,9 @@ class MainScreen(changeTheme: () -> Unit): Screen {
 //                                }
                                 if(index == 1){
                                     navigator.pop()
+                                    composableScope.launch {
+                                        SupabaseService.logOut()
+                                    }
                                 }
                                 openMenu = false
                             }) {
@@ -145,7 +155,8 @@ class MainScreen(changeTheme: () -> Unit): Screen {
                         }
                     }
                     Text( modifier = Modifier.align(Alignment.CenterEnd),
-                        text="Welcome, ",
+                        text=("Welcome, "+ (userName?.substring(1 until userName!!.length-1)
+                            ?: ""))+"! You have "+cashmicoin +" CASHMICOIN",
                         color = MaterialTheme.colors.onPrimary
                     )
                 }
@@ -171,7 +182,7 @@ class MainScreen(changeTheme: () -> Unit): Screen {
                 itemList.clear()
                 itemList.addAll(SupabaseService.supabase
                     .from("prize_summary")
-                    .select(columns = Columns.list("item_id, item_name, average_prize, max_prize, min_prize"))
+                    .select(columns = Columns.list("item_id(id, image), item_name, average_prize, max_prize, min_prize"))
                     .decodeList<SummaryPrize>())
                 imageList.clear()
                 imageList.addAll(SupabaseService.supabase
@@ -179,6 +190,12 @@ class MainScreen(changeTheme: () -> Unit): Screen {
                     .select(columns = Columns.list("id, image"))
                     .decodeList<ItemImage>())
                 println("update list")
+                println(
+                    SupabaseService.getCurrentUser().userMetadata
+                )
+                println(
+                    itemList[0].item_id.image
+                )
             }
         }
 //        AnimatedVisibility(itemPanelVisible){
@@ -267,7 +284,9 @@ class MainScreen(changeTheme: () -> Unit): Screen {
                                 )
 
                                 Button(onClick = { onClick()
-                                                 navigator.push(ItemScreen( summaryPrize = summaryPrize,navigator = navigator))},
+                                                 navigator.push(ItemScreen( summaryPrize = summaryPrize,
+                                                     navigator = navigator,
+                                                     userInfo = userInfo))},
                                     modifier= Modifier.size(36.dp).align(Alignment.CenterEnd),  //avoid the oval shape
                                     shape = CircleShape,
                                     contentPadding = PaddingValues(0.dp),  //avoid the little icon

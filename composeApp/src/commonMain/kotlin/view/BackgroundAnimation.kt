@@ -33,7 +33,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 @Composable
-fun BackgroundAnimation(randomX: Float = 0.5f,randomY: Float =0.5f){
+fun BackgroundAnimation(){
 //    var boxSize by remember { mutableStateOf(IntSize.Zero) }
 //    val infiniteTransition = rememberInfiniteTransition()
 //
