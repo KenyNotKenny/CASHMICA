@@ -114,7 +114,7 @@ class SupabaseService {
 }
 @Serializable
 data class SummaryPrize(
-    var item_id: ItemImage,
+    var item_id: Item,
     var item_name: String,
     var average_prize: Int,
     var max_prize: Int,
@@ -129,8 +129,9 @@ data class EntrytDetail(
     val price: Int,
 )
 @Serializable
-data class ItemImage(
+data class Item(
     val id: Int,
+    val name: String,
     val image: String?
 )
 @Serializable

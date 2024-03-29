@@ -69,7 +69,7 @@ class ItemScreen(private val summaryPrize: SummaryPrize, private val navigator: 
                         .select(columns = Columns.list("item_id, seller_id, user_id, expired_date, price"))
                         {
                             filter {
-                                eq("item_id", summaryPrize.item_id)
+                                eq("item_id", summaryPrize.item_id.id)
                             }
                         }
                         .decodeList<EntrytDetail>())
@@ -105,11 +105,13 @@ class ItemScreen(private val summaryPrize: SummaryPrize, private val navigator: 
         Box(modifier = Modifier.fillMaxSize()){
             Column(modifier = Modifier.fillMaxSize()){
                 Box(modifier = Modifier.fillMaxWidth().aspectRatio(1.0f)){
+                    if(summaryPrize.item_id.image!= null){
+                        KamelImage(
+                            resource = asyncPainterResource(data = summaryPrize.item_id.image!!),
+                            contentDescription = "description"
+                        )
+                    }
 
-                    KamelImage(
-                        resource = asyncPainterResource(data = "https://product.hstatic.net/200000401369/product/loc-4-hop-thuc-uong-lua-mach-it-duong-milo-180ml_50eba1f822fb4c69b7f325c2c00e6361.jpg"),
-                        contentDescription = "description"
-                    )
 //                Button(onClick = { navigator.pop()}){
 //                    Icon(Icons.Default.Close,contentDescription = null)
 //                }

@@ -62,13 +62,15 @@ import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.user.UserInfo
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
+import io.kamel.image.KamelImage
+import io.kamel.image.asyncPainterResource
 import io.ktor.util.Identity.decode
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
-import model.ItemImage
+
 import model.SummaryPrize
 import model.SupabaseService
 
@@ -82,6 +84,7 @@ class MainScreen(changeTheme: () -> Unit): Screen {
     var userInfo: UserInfo? = null
     var userName: String? = null
     var cashmicoin: Int = 0
+    var searchBarText: String = ""
 
     init {
         runBlocking {
@@ -101,7 +104,7 @@ class MainScreen(changeTheme: () -> Unit): Screen {
         val navigator = LocalNavigator.currentOrThrow
         val composableScope = rememberCoroutineScope()
         val itemList = remember { mutableStateListOf<SummaryPrize>() }
-        val imageList = remember { mutableStateListOf<ItemImage>() }
+
         var openMenu by remember { mutableStateOf(false) }
         var itemPanelVisible by remember { mutableStateOf(false) }
         Column{
@@ -182,19 +185,15 @@ class MainScreen(changeTheme: () -> Unit): Screen {
                 itemList.clear()
                 itemList.addAll(SupabaseService.supabase
                     .from("prize_summary")
-                    .select(columns = Columns.list("item_id(id, image), item_name, average_prize, max_prize, min_prize"))
+                    .select(columns = Columns.list("item_id(id, name, image), item_name, average_prize, max_prize, min_prize")){
+                        filter {
+//                            like("item_name","%"+searchBarText+"%")
+                            ilike("item_name","%"+searchBarText+"%")
+                        }
+                    }
                     .decodeList<SummaryPrize>())
-                imageList.clear()
-                imageList.addAll(SupabaseService.supabase
-                    .from("item")
-                    .select(columns = Columns.list("id, image"))
-                    .decodeList<ItemImage>())
-                println("update list")
                 println(
                     SupabaseService.getCurrentUser().userMetadata
-                )
-                println(
-                    itemList[0].item_id.image
                 )
             }
         }
@@ -208,7 +207,8 @@ class MainScreen(changeTheme: () -> Unit): Screen {
     }
     @Composable
     fun SearchBar(modifier: Modifier, onClick: () -> Unit){
-        var searchBarText by rememberSaveable() { mutableStateOf("") }
+        var text by rememberSaveable() { mutableStateOf("") }
+        println(searchBarText)
         TextField(
             modifier = modifier,
             colors = TextFieldDefaults.textFieldColors(
@@ -219,8 +219,10 @@ class MainScreen(changeTheme: () -> Unit): Screen {
                 disabledIndicatorColor = Color.Transparent)
             ,
             placeholder = { Text(text = "Seach item") },
-            value = searchBarText,
-            onValueChange = { searchBarText = it},
+            value = text,
+            onValueChange = { text = it
+                            searchBarText = text
+                            },
             textStyle = TextStyle(color = MaterialTheme.colors.onBackground),
             singleLine = true,
             trailingIcon = {
@@ -253,9 +255,13 @@ class MainScreen(changeTheme: () -> Unit): Screen {
                             .fillMaxSize(0.8f)
                             .align(Alignment.Center)
                             .clip(RoundedCornerShape(20.dp))){
-                            Box( modifier =  Modifier.fillMaxSize().background(Color.LightGray)){
-                                Text(text = "Image",
-                                    modifier = Modifier.align(Alignment.Center))
+                            Box( modifier =  Modifier.fillMaxSize().background(Color.Transparent)){
+                                if(summaryPrize.item_id.image!= null){
+                                    KamelImage(
+                                        resource = asyncPainterResource(data = summaryPrize.item_id.image!!),
+                                        contentDescription = "description"
+                                    )
+                                }
                             }
                         }
                     }

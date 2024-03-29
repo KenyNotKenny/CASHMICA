@@ -1,6 +1,7 @@
 package view.composable
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,8 +16,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -27,9 +31,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -37,8 +43,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.jan.supabase.gotrue.user.UserInfo
+import io.github.jan.supabase.postgrest.from
+import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 import model.EntrytDetail
 import model.Seller
+import model.SupabaseService
 
 
 var sellerText: String = ""
@@ -46,21 +56,31 @@ var seller_id:Int? = null
 
 @Composable
 fun UploadTab(sellerList:MutableList<Seller>, userInfo: UserInfo?, item_id: Int){
+    val composableScope = rememberCoroutineScope()
     var priceText by remember { mutableStateOf("") }
     var dayText by remember { mutableStateOf("") }
     var monthText by remember { mutableStateOf("") }
     var yearText by remember { mutableStateOf("") }
     var sellerListShow by remember { mutableStateOf(false) }
-
-    if(seller_id==null || priceText.isEmpty()){}else{
-        var entry: EntrytDetail = EntrytDetail(
+    var submitButtonVisible by remember { mutableStateOf(false) }
+    var entry: EntrytDetail = EntrytDetail(
+        item_id = item_id,
+        seller_id = 1 ,
+        user_id = userInfo!!.id,
+        expired_date = LocalDate(dayOfMonth = 1, monthNumber = 1, year = 1),
+        price = 0
+    )
+    if(seller_id==null || priceText.isEmpty()|| dayText.isEmpty() || monthText.isEmpty()|| yearText.isEmpty()){
+        submitButtonVisible = false
+    }else{
+        entry = EntrytDetail(
             item_id = item_id,
             seller_id = seller_id!! ,
             user_id = userInfo!!.id,
-            expired_date = null,
+            expired_date = LocalDate(dayOfMonth = dayText.toInt(), monthNumber = monthText.toInt(), year = yearText.toInt()),
             price = priceText.toInt()
         )
-
+        submitButtonVisible = true
         println(entry.toString())
     }
 
@@ -186,8 +206,31 @@ fun UploadTab(sellerList:MutableList<Seller>, userInfo: UserInfo?, item_id: Int)
                     textStyle = TextStyle(
                         fontSize = 24.sp,
                         textAlign = TextAlign.End),)
-            }
 
+            }
+            Spacer(Modifier.height(10.dp))
+
+            AnimatedVisibility(submitButtonVisible){
+                Box(Modifier.fillMaxWidth()){
+                    Box(
+                        modifier = Modifier.align(Alignment.Center).height(60.dp).width(160.dp).clip(
+                            RoundedCornerShape(30.dp)).align(Alignment.Center)
+                    ){
+                        Box(modifier = Modifier.fillMaxSize().background(Color(0xFF8F00FF)).clickable {
+                            composableScope.launch {
+                                SupabaseService.supabase.from("entry").insert(entry)
+                            }
+                        }){
+                            Text(
+                                modifier = Modifier.align(Alignment.Center),
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 22.sp,
+                                text = "Submit ↥")
+                        }
+                    }
+                }
+            }
             Spacer(Modifier.height(10.dp))
         }
     }
