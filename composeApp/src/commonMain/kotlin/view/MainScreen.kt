@@ -1,6 +1,7 @@
 package view
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,10 +15,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -53,6 +57,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -73,6 +78,7 @@ import kotlinx.serialization.json.decodeFromJsonElement
 
 import model.SummaryPrize
 import model.SupabaseService
+import view.composable.ProfilePanel
 
 
 class MainScreen(changeTheme: () -> Unit): Screen {
@@ -82,7 +88,7 @@ class MainScreen(changeTheme: () -> Unit): Screen {
         {SignOutButton()}
     )
     var userInfo: UserInfo? = null
-    var userName: String? = null
+    var userName: String = "[Username]"
     var cashmicoin: Int = 0
     var searchBarText: String = ""
 
@@ -90,7 +96,7 @@ class MainScreen(changeTheme: () -> Unit): Screen {
         runBlocking {
             launch {
                 userInfo = SupabaseService.getCurrentUser()
-                userName = userInfo?.userMetadata?.get("display_name").toString()
+                userName = Json.decodeFromJsonElement(userInfo?.userMetadata?.get("display_name")!!)
                 cashmicoin =  Json.decodeFromJsonElement(userInfo?.userMetadata?.get("cashmicoin")!!)
 
             }
@@ -100,17 +106,17 @@ class MainScreen(changeTheme: () -> Unit): Screen {
     @Composable
     override fun Content() {
 
-        val brush = Brush.horizontalGradient(listOf(MaterialTheme.colors.primaryVariant,MaterialTheme.colors.primary))
+        val brush = Brush.horizontalGradient(listOf(MaterialTheme.colors.primary,MaterialTheme.colors.primary))
         val navigator = LocalNavigator.currentOrThrow
         val composableScope = rememberCoroutineScope()
         val itemList = remember { mutableStateListOf<SummaryPrize>() }
+        var firstSearch by remember { mutableStateOf(true) }
 
         var openMenu by remember { mutableStateOf(false) }
         var itemPanelVisible by remember { mutableStateOf(false) }
-        Column{
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .height(100.dp)){
+        Column(modifier = Modifier.background(MaterialTheme.colors.primary)){
+            Box(modifier = Modifier.animateContentSize().fillMaxWidth().heightIn(min = 80.dp).fillMaxHeight(if(firstSearch) 0.6f else 0.0f)
+            ){
                 Canvas(
                     modifier = Modifier.fillMaxSize(),
                     onDraw = {
@@ -126,7 +132,6 @@ class MainScreen(changeTheme: () -> Unit): Screen {
                         modifier = Modifier.align(Alignment.CenterStart)
                         ,onClick = {
                             openMenu = !openMenu
-
                         }
                     )
                     DropdownMenu(
@@ -157,14 +162,48 @@ class MainScreen(changeTheme: () -> Unit): Screen {
                             }
                         }
                     }
-                    Text( modifier = Modifier.align(Alignment.CenterEnd),
-                        text=("Welcome, "+ (userName?.substring(1 until userName!!.length-1)
-                            ?: ""))+"! You have "+cashmicoin +" CASHMICOIN",
-                        color = MaterialTheme.colors.onPrimary
-                    )
+                    Box(modifier = Modifier.align(Alignment.CenterEnd)){
+                        this@Column.AnimatedVisibility(!firstSearch){
+                            Text( modifier = Modifier.align(Alignment.CenterEnd),
+                                text=("Welcome, "+ userName)+"! You have "+cashmicoin +" CASHMICOIN",
+                                color = MaterialTheme.colors.background
+                            )
+                        }
+                    }
+                }
+                if(firstSearch){
+                    Box(Modifier.fillMaxWidth().fillMaxSize(0.9f).align(Alignment.BottomCenter)){
+                        ProfilePanel(modifier = Modifier.fillMaxSize(), userName =  userName, cashmicoin = cashmicoin)
+
+                    }
                 }
 
 
+
+            }
+            Box(Modifier.fillMaxWidth().height(60.dp)){
+//                Box(modifier = Modifier.align(Alignment.TopCenter).background(MaterialTheme.colors.primary).height(30.dp).fillMaxWidth())
+                Box(modifier = Modifier.align(Alignment.BottomCenter).background(MaterialTheme.colors.surface).height(30.dp).fillMaxWidth())
+                SearchBar(modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter)
+                    .height(60.dp)
+                    .clip(RoundedCornerShape(100.dp))){
+                    composableScope.launch{
+                        firstSearch = false
+                        itemList.clear()
+                        itemList.addAll(SupabaseService.supabase
+                            .from("prize_summary")
+                            .select(columns = Columns.list("item_id(id, name, image), item_name, average_prize, max_prize, min_prize")){
+                                filter {
+//                            like("item_name","%"+searchBarText+"%")
+                                    ilike("item_name","%"+searchBarText+"%")
+                                }
+                            }
+                            .decodeList<SummaryPrize>())
+                        println(
+                            SupabaseService.getCurrentUser().userMetadata
+                        )
+                    }
+                }
             }
             Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colors.surface),
             ){
@@ -178,25 +217,7 @@ class MainScreen(changeTheme: () -> Unit): Screen {
 
             }
         }
-        SearchBar(modifier = Modifier.fillMaxWidth()
-            .padding(top = 70.dp)
-            .clip(RoundedCornerShape(40.dp))){
-            composableScope.launch{
-                itemList.clear()
-                itemList.addAll(SupabaseService.supabase
-                    .from("prize_summary")
-                    .select(columns = Columns.list("item_id(id, name, image), item_name, average_prize, max_prize, min_prize")){
-                        filter {
-//                            like("item_name","%"+searchBarText+"%")
-                            ilike("item_name","%"+searchBarText+"%")
-                        }
-                    }
-                    .decodeList<SummaryPrize>())
-                println(
-                    SupabaseService.getCurrentUser().userMetadata
-                )
-            }
-        }
+
 //        AnimatedVisibility(itemPanelVisible){
 //            ItemDetail()
 //        }

@@ -55,7 +55,6 @@ import model.SupabaseService
 import view.composable.UploadTab
 
 class ItemScreen(private val summaryPrize: SummaryPrize, private val navigator: Navigator, private val userInfo: UserInfo?): Screen {
-    val tempList = listOf(1,2,3,4,5,6,7)
     var entriesList = mutableListOf<EntrytDetail>()
     var sellerList = mutableListOf<Seller>()
 

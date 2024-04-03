@@ -18,8 +18,8 @@ private val LightColors = Colors(
     onBackground = md_theme_light_onBackground,
     surface = md_theme_light_surface,
     onSurface = md_theme_light_onSurface,
-    primaryVariant = md_theme_dark_primaryVariant,
-    secondaryVariant = md_theme_dark_secondaryVariant,
+    primaryVariant = md_theme_light_primaryVariant,
+    secondaryVariant = md_theme_light_onSecondaryVariant,
     isLight = false
 )
 

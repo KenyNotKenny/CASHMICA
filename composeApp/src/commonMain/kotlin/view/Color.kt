@@ -2,30 +2,36 @@ package com.example.compose
 import androidx.compose.material.Colors
 import androidx.compose.ui.graphics.Color
 
-val md_theme_light_primary = Color(0xFF6B24F9)
-val md_theme_light_primaryVariant = Color(0xFF4200ff)
+val md_theme_light_primary = Color(0xFF8600ee)
+val md_theme_light_onPrimary = Color(0xFF2b0052)
+val md_theme_light_primaryVariant = Color(0xFFefdbff)
+val md_theme_light_onPrimaryVariant = Color(0xFFffffff)
+val md_theme_light_secondary = Color(0xFF156e00)
+val md_theme_light_onSecondary = Color(0xFFFFFFFF)
+val md_theme_light_secondaryVariant = Color(0xFF79ff57)
+val md_theme_light_onSecondaryVariant = Color(0xFF032100)
+val md_theme_light_error = Color(0xFFba1a1a)
+val md_theme_light_onError = Color(0xFFFFFFFF)
+val md_theme_light_background = Color(0xFFFFFBFF)
+val md_theme_light_onBackground = Color(0xFF1d1b1e)
+val md_theme_light_surface = Color(0xFFe9e0eb)
+val md_theme_light_onSurface = Color(0xFF4a454e)
 
-val md_theme_light_onPrimary = Color(0xFFFFFFFF)
+
+
+
+
 val md_theme_light_primaryContainer = Color(0xFFE8DDFF)
 val md_theme_light_onPrimaryContainer = Color(0xFF21005E)
-val md_theme_light_secondary = Color(0xFF615B71)
-val md_theme_light_secondaryVariant = Color(0xFF0000e3)
 
-val md_theme_light_onSecondary = Color(0xFFFFFFFF)
 val md_theme_light_secondaryContainer = Color(0xFFE8DEF8)
 val md_theme_light_onSecondaryContainer = Color(0xFF1D192B)
 val md_theme_light_tertiary = Color(0xFF7D5261)
 val md_theme_light_onTertiary = Color(0xFFFFFFFF)
 val md_theme_light_tertiaryContainer = Color(0xFFFFD9E3)
 val md_theme_light_onTertiaryContainer = Color(0xFF31101E)
-val md_theme_light_error = Color(0xFFBA1A1A)
 val md_theme_light_errorContainer = Color(0xFFFFDAD6)
-val md_theme_light_onError = Color(0xFFFFFFFF)
 val md_theme_light_onErrorContainer = Color(0xFF410002)
-val md_theme_light_background = Color(0xFFFFFBFF)
-val md_theme_light_onBackground = Color(0xFF1C1B1E)
-val md_theme_light_surface = Color(0xFFF3F0F9)
-val md_theme_light_onSurface = Color(0xFF1C1B1E)
 val md_theme_light_surfaceVariant = Color(0xFFE6E0EC)
 val md_theme_light_onSurfaceVariant = Color(0xFF48454E)
 val md_theme_light_outline = Color(0xFF79757F)
