@@ -90,13 +90,12 @@ class LoginScreen(val changeTheme: () -> Unit): Screen {
             contentDescription = null,
             contentScale = ContentScale.FillHeight,)
         Box(Modifier.fillMaxSize()){
-            Image( modifier = Modifier.fillMaxHeight(0.18f).align(Alignment.BottomCenter),
-                painter = painterResource(DrawableResource("drawable/wave.png")),
+            Image( modifier = Modifier.fillMaxHeight(0.18f).fillMaxWidth().align(Alignment.BottomCenter),
+                painter = painterResource(DrawableResource("drawable/bg_corner.png")),
                 contentDescription = null,
-                contentScale = ContentScale.FillHeight,
+                contentScale = ContentScale.FillBounds,
                 )
         }
-
         Box (Modifier.fillMaxSize(),){
             Box(modifier = Modifier.wrapContentHeight()
                 .fillMaxWidth(0.8f)

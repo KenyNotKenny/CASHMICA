@@ -3,13 +3,20 @@ package view
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -20,6 +27,7 @@ import model.SupabaseService
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import view.composable.LoadingAnimation
 
 class LoadingScreen(val changeTheme: () -> Unit): Screen {
 
@@ -37,6 +45,7 @@ class LoadingScreen(val changeTheme: () -> Unit): Screen {
             Image( modifier = Modifier.align(Alignment.Center).fillMaxWidth(0.8f),
                 painter = painterResource(DrawableResource("drawable/logo_t.png")),
                 contentDescription = null)
+
         }
         composableScope.launch{
             val session = SupabaseService.supabase.auth.currentSessionOrNull()

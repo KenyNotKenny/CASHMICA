@@ -54,6 +54,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -75,7 +79,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
-
+import kotlinx.serialization.json.put
 import model.SummaryPrize
 import model.SupabaseService
 import view.composable.ProfilePanel
@@ -213,8 +217,24 @@ class MainScreen(changeTheme: () -> Unit): Screen {
                         Spacer(modifier = Modifier.size(20.dp))
                         ItemCard(summaryPrize = item, navigator = navigator, onClick = { itemPanelVisible = true })
                     }
+                    item {
+                        Spacer(modifier = Modifier.size(20.dp))
+                        Box(Modifier.fillMaxWidth()){
+                            Button(
+                                modifier = Modifier.height(60.dp).wrapContentWidth().align(Alignment.Center),
+                                shape = RoundedCornerShape(30.dp),
+                                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
+                                onClick = { navigator.push(CreateItemSrceen(navigator,userInfo)) }){
+                                Text(
+                                    text ="Add item",
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colors.background
+                                )
+                            }
+                        }
+                    }
                 }
-
             }
         }
 
@@ -225,13 +245,18 @@ class MainScreen(changeTheme: () -> Unit): Screen {
 //            ItemPanel(onClickOut = {itemPanelVisible = false})
 //        }
 
+
     }
     @Composable
     fun SearchBar(modifier: Modifier, onClick: () -> Unit){
         var text by rememberSaveable() { mutableStateOf("") }
         println(searchBarText)
         TextField(
-            modifier = modifier,
+            modifier = modifier.onKeyEvent {
+                if (it.key == Key.Enter){
+                    onClick()
+                    true
+                }else{false}},
             colors = TextFieldDefaults.textFieldColors(
                 backgroundColor = MaterialTheme.colors.background,
 //                disabledTextColor = Color.Transparent,

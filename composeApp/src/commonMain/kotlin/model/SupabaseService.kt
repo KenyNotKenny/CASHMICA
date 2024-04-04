@@ -1,5 +1,6 @@
 package model
 
+import androidx.compose.runtime.MutableState
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.gotrue.Auth
 import io.github.jan.supabase.gotrue.auth
@@ -7,8 +8,6 @@ import io.github.jan.supabase.gotrue.providers.builtin.Email
 import io.github.jan.supabase.gotrue.user.UserInfo
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.PropertyConversionMethod
-import io.github.jan.supabase.postgrest.from
-import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
@@ -83,7 +82,6 @@ class SupabaseService {
                     data {
                         put("display_name", name)
                         put("cashmicoin", 0)
-
                     }
                 }
 
@@ -123,6 +121,14 @@ data class SummaryPrize(
 @Serializable
 data class EntrytDetail(
     var item_id: Int,
+    val seller_id: Seller,
+    val user_id: String,
+    val expired_date: LocalDate?,
+    val price: Int,
+)
+@Serializable
+data class SubmitableEntry(
+    var item_id: Int?,
     val seller_id: Int,
     val user_id: String,
     val expired_date: LocalDate?,
@@ -133,6 +139,11 @@ data class Item(
     val id: Int,
     val name: String,
     val image: String?
+)
+@Serializable
+data class SubmitableItem(
+    var name: String?,
+    var image: String?
 )
 @Serializable
 data class Seller(

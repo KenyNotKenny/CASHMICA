@@ -27,8 +27,10 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            export("io.github.hoc081098:kmp-viewmodel:0.7.1") // required to expose the classes to iOS.
         }
     }
+
 
     val coroutinesVersion = "1.7.3"
     val ktorVersion = "2.3.7"
@@ -79,6 +81,11 @@ kotlin {
             //Kamel
             implementation("media.kamel:kamel-image:0.9.3")
             implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
+
+            //Viewmodel
+            dependencies {
+                implementation("io.github.hoc081098:kmp-viewmodel-compose:0.7.1")
+            }
 
 
         }
