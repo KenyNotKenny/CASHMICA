@@ -53,9 +53,6 @@ import model.SubmitableEntry
 import model.SubmitableItem
 import model.SupabaseService
 
-
-
-
 @Composable
 fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, submitableItem:SubmitableItem? = null ){
     var sellerList = remember { mutableStateListOf<Seller>()}
@@ -69,6 +66,7 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
     var sellerListShow by remember { mutableStateOf(false) }
     var submitButtonVisible by remember { mutableStateOf(false) }
     var throwPopup = remember { mutableStateOf(false) }
+    var createSellerPopup = remember { mutableStateOf(false) }
     var entry: SubmitableEntry = SubmitableEntry(
         item_id = item_id,
         seller_id = 1 ,
@@ -193,7 +191,7 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
                     color = Color.Gray,
                     fontSize = 20.sp)
                 Text(
-                    modifier = Modifier.clickable {  },
+                    modifier = Modifier.clickable { createSellerPopup.value = true },
                     text = "Add seller",
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF8F00FF),
@@ -280,6 +278,11 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
             SuccessPopup {
                 throwPopup.value = false
                 navigator.pop() }
+        }
+        createSellerPopup.value ->{
+            CreateSellerPopup {
+                createSellerPopup.value = false
+            }
         }
     }
 }

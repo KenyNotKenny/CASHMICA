@@ -37,41 +37,6 @@ class SupabaseService {
 //            install(Auth)
 //        }
 
-
-        suspend fun loginEmail(em: String, pw: String): Result<String>{
-            try {
-                val loginResult = supabase.auth.signInWith(Email){
-                    email = em
-                    password = pw
-                }
-//                supabase.auth.modifyUser {
-//                    data {
-//                        put("display_name", "KenyNotKenny")
-//                    }
-//                }
-
-//        SupabaseService.supabase.auth.sessionStatus.collect {
-//            when(it) {
-//                is SessionStatus.Authenticated -> println(it.session.user)
-//                SessionStatus.LoadingFromStorage -> println("Loading from storage")
-//                SessionStatus.NetworkError -> println("Network error")
-//                SessionStatus.NotAuthenticated -> println("Not authenticated")
-//            }
-//            repeat(5){
-//                println("In sesson")
-//                delay(2000)
-//            }
-//            return@collect
-//        }
-                return Result.success("Login success")
-
-
-            } catch (e: Exception) {
-                // Handle other exceptions
-                println("Login fail")
-                return Result.failure(Exception("Login fail!"))
-            }
-        }
         suspend fun signUpEmail(em: String, pw: String, name: String): Result<String>{
             try {
                 val signUpResult = supabase.auth.signUpWith(Email){
@@ -151,6 +116,12 @@ data class Seller(
     val name: String,
     val address: String?,
     val link: String?,
+)
+@Serializable
+data class SubmitableSeller(
+    val name: String,
+    val address: String? = null,
+    val link: String? = null,
 )
 @Serializable
 data class Entry(

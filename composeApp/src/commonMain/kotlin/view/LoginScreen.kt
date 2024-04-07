@@ -62,6 +62,9 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.hoc081098.kmp.viewmodel.compose.kmpViewModel
+import com.hoc081098.kmp.viewmodel.createSavedStateHandle
+import com.hoc081098.kmp.viewmodel.viewModelFactory
 import io.github.jan.supabase.gotrue.SessionStatus
 import io.github.jan.supabase.gotrue.auth
 import kotlinx.coroutines.launch
@@ -70,14 +73,18 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import view.composable.LoginPanel
+import viewModel.LoginScreenViewModel
 
-class LoginScreen(val changeTheme: () -> Unit): Screen {
+class LoginScreen(): Screen {
 
     @OptIn(ExperimentalResourceApi::class)
     @Composable
     override fun Content() {
-
-//        Box(Modifier.fillMaxSize().background(MaterialTheme.colors.primary))
+        val viewModel: LoginScreenViewModel = kmpViewModel(
+            factory = viewModelFactory {
+                LoginScreenViewModel(savedStateHandle = createSavedStateHandle())
+            }
+        )
 
         Canvas(modifier = Modifier.fillMaxSize(), onDraw = {
             drawRect(
@@ -100,17 +107,10 @@ class LoginScreen(val changeTheme: () -> Unit): Screen {
             Box(modifier = Modifier.wrapContentHeight()
                 .fillMaxWidth(0.8f)
                 .align(Alignment.Center)){
-                LoginPanel(changeTheme)
+                LoginPanel( viewModel = viewModel)
             }
 
-
-
-//            Image(painter = painterResource(DrawableResource("drawable/logo.png")),
-//                contentDescription = null)
-
         }
-
-
 
     }
 }

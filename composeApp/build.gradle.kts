@@ -83,9 +83,7 @@ kotlin {
             implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
 
             //Viewmodel
-            dependencies {
-                implementation("io.github.hoc081098:kmp-viewmodel-compose:0.7.1")
-            }
+            implementation("io.github.hoc081098:kmp-viewmodel-compose:0.7.1")
 
 
         }

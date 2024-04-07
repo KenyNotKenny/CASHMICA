@@ -45,12 +45,11 @@ import view.MainScreen
 fun App() {
 
     var temp = isSystemInDarkTheme()
-    var localDarkTheme by remember { mutableStateOf(temp) }
 
-    AppTheme(useDarkTheme = localDarkTheme) {
+    AppTheme() {
 //        Navigator(screen = ItemScreen())
 
-        Navigator(screen = LoadingScreen(changeTheme = {localDarkTheme = !localDarkTheme})){navigator ->
+        Navigator(screen = LoadingScreen()){navigator ->
             FadeTransition(navigator)
         }
 

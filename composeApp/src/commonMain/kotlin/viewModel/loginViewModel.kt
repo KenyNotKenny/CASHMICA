@@ -1,4 +1,0 @@
-package viewModel
-
-class loginViewModel {
-}

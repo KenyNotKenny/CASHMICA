@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,6 +63,9 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.hoc081098.kmp.viewmodel.compose.kmpViewModel
+import com.hoc081098.kmp.viewmodel.createSavedStateHandle
+import com.hoc081098.kmp.viewmodel.viewModelFactory
 import io.github.jan.supabase.gotrue.SessionStatus
 import io.github.jan.supabase.gotrue.auth
 import kotlinx.coroutines.launch
@@ -71,14 +75,16 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import view.MainScreen
 import view.composable.LoginPanel
+import viewModel.LoginScreenViewModel
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
-fun LoginPanel(changeTheme: () -> Unit){
+fun LoginPanel(viewModel: LoginScreenViewModel){
     var authFail by remember{ mutableStateOf<Boolean>(false) }
     var signUpForm by remember{ mutableStateOf<Boolean>(false) }
     var loading  by remember{ mutableStateOf(false) }
     val navigator = LocalNavigator.currentOrThrow
+
 
     Column(Modifier.fillMaxWidth()
     ) {
@@ -100,12 +106,12 @@ fun LoginPanel(changeTheme: () -> Unit){
                     horizontalAlignment = Alignment.CenterHorizontally) {
                     val composableScope = rememberCoroutineScope()
                     Spacer(Modifier.height(16.dp))
-                    var displayNameText by remember { mutableStateOf("") }
+                    val displayNameText by viewModel.displayNameTextStateFlow.collectAsState()
                     AnimatedVisibility(signUpForm){
                         OutlinedTextField(
                             modifier = Modifier.fillMaxWidth(),
                             value = displayNameText,
-                            onValueChange = { displayNameText = it
+                            onValueChange = { viewModel.setDisplayNameText(it)
                             },
                             colors = TextFieldDefaults.outlinedTextFieldColors(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
@@ -115,16 +121,13 @@ fun LoginPanel(changeTheme: () -> Unit){
                             shape = RoundedCornerShape(30.dp)
                         )
                     }
-                    var emailText by remember { mutableStateOf("") }
+                    val emailText by viewModel.emailTextStateFlow.collectAsState()
                     OutlinedTextField(
                         modifier = Modifier.fillMaxWidth(),
                         value = emailText,
-                        onValueChange = { emailText = it
+                        onValueChange = { viewModel.setEmailText(it)
                             authFail = false
                         },
-//                        colors = if(authFail) TextFieldDefaults.outlinedTextFieldColors(
-//                            unfocusedBorderColor = MaterialTheme.colors.error )
-//                        else TextFieldDefaults.outlinedTextFieldColors(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         textStyle = TextStyle(color = MaterialTheme.colors.onBackground),
                         label = { Text("E-mail")},
@@ -133,12 +136,12 @@ fun LoginPanel(changeTheme: () -> Unit){
                         isError = authFail
 
                     )
-                    var passwordText by remember { mutableStateOf("") }
+                    val passwordText by viewModel.passwordTextStateFlow.collectAsState()
                     var passwordVisible by remember { mutableStateOf(false) }
                     OutlinedTextField(
                         modifier = Modifier.fillMaxWidth().height(60.dp),
                         value = passwordText,
-                        onValueChange = { passwordText = it
+                        onValueChange = { viewModel.setPasswordText(it)
                             authFail = false
 
 
@@ -164,16 +167,19 @@ fun LoginPanel(changeTheme: () -> Unit){
                             }
                         },
                         shape = RoundedCornerShape(30.dp),
-                        isError = authFail
+                        isError = authFail || (passwordText.length<6 && !passwordText.isEmpty() && signUpForm)
 
                     )
+                    AnimatedVisibility(passwordText.length<6 && !passwordText.isEmpty() && signUpForm){
+                        Text("Password must be at least 6 characters",
+                            color = MaterialTheme.colors.error)
+                    }
                     var confirmPasswordCorrect by remember { mutableStateOf(true) }
                     AnimatedVisibility(signUpForm){
                         Column {
                             var confirmpasswordText by remember { mutableStateOf("") }
-                            var confirmpasswordVisible by remember { mutableStateOf(false) }
                             OutlinedTextField(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().height(60.dp),
                                 value = confirmpasswordText,
                                 onValueChange = { confirmpasswordText = it
                                     authFail = false
@@ -181,18 +187,21 @@ fun LoginPanel(changeTheme: () -> Unit){
                                 textStyle = TextStyle(color = MaterialTheme.colors.onBackground),
                                 label = { Text("Confirm password")},
                                 singleLine = true,
-                                visualTransformation = if (confirmpasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                                 trailingIcon = {
-                                    val image = if (confirmpasswordVisible)
-                                        Icons.Filled.KeyboardArrowDown
-                                    else Icons.Filled.KeyboardArrowUp
+                                    val image = if (passwordVisible)
+                                        "drawable/icon/view.png"
+                                    else "drawable/icon/hidden.png"
 
                                     // Please provide localized description for accessibility services
-                                    val description = if (confirmpasswordVisible) "Hide password" else "Show password"
+                                    val description = if (passwordVisible) "Hide password" else "Show password"
 
-                                    IconButton(onClick = {confirmpasswordVisible = !confirmpasswordVisible}){
-                                        Icon(imageVector  = image, description)
+                                    IconButton(onClick = {passwordVisible = !passwordVisible}){
+                                        Icon( modifier = Modifier.fillMaxHeight(0.5f).padding(end = 10.dp),
+                                            painter = painterResource(DrawableResource(image)),
+                                            contentDescription = description,
+                                        )
                                     }
                                 },
                                 shape = RoundedCornerShape(30.dp),
@@ -216,34 +225,34 @@ fun LoginPanel(changeTheme: () -> Unit){
                     Box(Modifier.fillMaxWidth().wrapContentHeight()){
                         Button(
                             modifier = Modifier.fillMaxWidth().align(Alignment.CenterEnd).height(50.dp),
-//                            colors = ButtonDefaults.buttonColors(
-//                                backgroundColor = MaterialTheme.colors.primaryVariant,
-//                                contentColor = MaterialTheme.colors.onPrimary,
-//                                disabledBackgroundColor = MaterialTheme.colors.primary
-//                            ),
                             shape = RoundedCornerShape(30.dp),
                             onClick = {
                                 loading = true
                                 authFail = false
                                 composableScope.launch {
-                                    if(signUpForm && confirmPasswordCorrect){
-                                        var signUpResult = SupabaseService.signUpEmail(emailText,passwordText,displayNameText)
-                                        if (signUpResult.isSuccess){
-                                            navigator.push(MainScreen(changeTheme = {changeTheme()}))
-                                        }else{
-                                            authFail = true
-                                            loading = false
+                                    if(signUpForm ){
+                                        if(confirmPasswordCorrect && passwordText.length > 5){
+                                            viewModel.trySignUp(
+                                                OnSuccess = {
+                                                    navigator.push(MainScreen())
+                                                },
+                                                OnFailure = {
+                                                    authFail = true
+                                                    loading = false
+                                                }
+                                            )
                                         }
                                     }
                                     else{
-                                        var loginResult = SupabaseService.loginEmail(emailText,passwordText)
-                                        if (loginResult.isSuccess){
-                                            navigator.push(MainScreen(changeTheme = {changeTheme()}))
-                                        }else{
-                                            authFail = true
-                                            loading = false
-
-                                        }
+                                        viewModel.tryLogin(
+                                            OnSuccess = {
+                                                navigator.push(MainScreen())
+                                            },
+                                            OnFailure = {
+                                                authFail = true
+                                                loading = false
+                                            }
+                                        )
                                     }
 
                                 }
@@ -278,8 +287,6 @@ fun LoginPanel(changeTheme: () -> Unit){
                         )
                     }
                     Spacer(Modifier.height(20.dp))
-
-
 
                 }
             }
