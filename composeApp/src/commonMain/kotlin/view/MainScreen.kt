@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -34,12 +32,10 @@ import androidx.compose.material.Switch
 import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -48,25 +44,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.hoc081098.kmp.viewmodel.compose.kmpViewModel
 import com.hoc081098.kmp.viewmodel.createSavedStateHandle
 import com.hoc081098.kmp.viewmodel.viewModelFactory
 import io.github.jan.supabase.gotrue.auth
-import io.github.jan.supabase.postgrest.from
-import io.github.jan.supabase.postgrest.query.Columns
-import io.kamel.image.KamelImage
-import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
-import model.SummaryPrize
 import model.SupabaseService
+import view.composable.ItemCard
 import view.composable.ItemSearchBar
 import view.composable.ProfilePanel
 import viewModel.MainScreenViewModel
@@ -89,7 +79,7 @@ class MainScreen : Screen {
         val brush = Brush.horizontalGradient(listOf(MaterialTheme.colors.primary,MaterialTheme.colors.primary))
         val navigator = LocalNavigator.currentOrThrow
         val composableScope = rememberCoroutineScope()
-        val itemList = remember { mutableStateListOf<SummaryPrize>() }
+        val itemList by viewModel.itemListStateFlow.collectAsState()
 
         var openMenu by remember { mutableStateOf(false) }
         var itemPanelVisible by remember { mutableStateOf(false) }
@@ -122,7 +112,7 @@ class MainScreen : Screen {
                         menuList.forEachIndexed { index, composable ->
                             DropdownMenuItem(onClick = {
                                 if(index == 1){
-                                    navigator.push(LoginScreen())
+                                    navigator.replace(LoginScreen())
                                     composableScope.launch {
                                         try {
                                             SupabaseService.supabase.auth.signOut()
@@ -168,26 +158,14 @@ class MainScreen : Screen {
                     onClick = {
                         composableScope.launch{
                             viewModel.setFirstSearch(false)
-                            itemList.clear()
-                            itemList.addAll(SupabaseService.supabase
-                                .from("prize_summary")
-                                .select(columns = Columns.list("item_id(id, name, image), item_name, average_prize, max_prize, min_prize")){
-                                    filter {
-//                            like("item_name","%"+searchBarText+"%")
-                                        ilike("item_name","%"+viewModel.searchBarTextStateFlow.value+"%")
-                                    }
-                                }
-                                .decodeList<SummaryPrize>())
-                            println(
-                                SupabaseService.getCurrentUser().userMetadata
-                            )
+                            viewModel.querryForItemList()
                         }
                     })
             }
             Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colors.surface),
             ){
                 Spacer(modifier = Modifier.size(20.dp))
-                LazyColumn{
+                LazyColumn(modifier = Modifier.padding(horizontal = 10.dp)){
                     items(itemList){ item ->
                         Spacer(modifier = Modifier.size(20.dp))
                         ItemCard(summaryPrize = item, navigator = navigator, viewModel = viewModel, onClick = { itemPanelVisible = true })
@@ -212,91 +190,8 @@ class MainScreen : Screen {
                 }
             }
         }
-
-//        AnimatedVisibility(itemPanelVisible){
-//            ItemDetail()
-//        }
-//        AnimatedVisibility(itemPanelVisible){
-//            ItemPanel(onClickOut = {itemPanelVisible = false})
-//        }
-
-
     }
 
-    @Composable
-    fun ItemCard(summaryPrize: SummaryPrize,navigator: Navigator, viewModel: MainScreenViewModel, onClick: () -> Unit){
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .height(180.dp)
-            .clip(RoundedCornerShape(30.dp))){
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colors.background)){
-                Row (
-                    modifier = Modifier.fillMaxSize(),
-                    verticalAlignment = Alignment.CenterVertically) {
-                    Box( modifier = Modifier
-                        .fillMaxHeight(1f)
-                        .aspectRatio(1f)){
-                        Box(modifier =  Modifier
-                            .fillMaxSize(0.8f)
-                            .align(Alignment.Center)
-                            .clip(RoundedCornerShape(20.dp))){
-                            Box( modifier =  Modifier.fillMaxSize().background(Color.Transparent)){
-                                if(summaryPrize.item_id.image!= null){
-                                    KamelImage(
-                                        resource = asyncPainterResource(data = summaryPrize.item_id.image!!),
-                                        contentDescription = "description"
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    Box(modifier = Modifier.fillMaxSize()){
-                        Box( modifier =  Modifier
-                            .fillMaxHeight(0.8f)
-                            .fillMaxWidth(0.9f)
-                            .align(Alignment.Center)){
-                            Text(text = summaryPrize.item_name,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 27.sp,
-                                color = MaterialTheme.colors.onBackground
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.BottomStart)
-                                    .fillMaxWidth(0.9f)
-                                    .wrapContentHeight()
-                            ) {
-                                Text(
-                                    modifier = Modifier.align(Alignment.CenterStart),
-                                    text =  summaryPrize.average_prize.addCommas() +" vnđ",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 24.sp,
-                                    color = MaterialTheme.colors.onBackground
-                                )
-
-                                Button(onClick = { onClick()
-                                                 navigator.push(ItemScreen( summaryPrize = summaryPrize,
-                                                     navigator = navigator,
-                                                     userInfo = viewModel.userInfo))},
-                                    modifier= Modifier.size(36.dp).align(Alignment.CenterEnd),  //avoid the oval shape
-                                    shape = CircleShape,
-                                    contentPadding = PaddingValues(0.dp),  //avoid the little icon
-                                    colors = ButtonDefaults.buttonColors(
-                                        backgroundColor =  MaterialTheme.colors.primary,
-                                        contentColor = MaterialTheme.colors.onPrimary
-                                        )
-                                ) {
-                                    Icon(Icons.Default.Add, contentDescription = "More")
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
     @Composable
     fun MenuButton(modifier: Modifier, onClick: () -> Unit){
         Button(onClick = onClick,
@@ -336,20 +231,6 @@ class MainScreen : Screen {
     @Composable
     fun SignOutButton(){
         Text("Sign out")
-    }
-    private fun Int.addCommas(): String {
-        val numberString = this.toString()
-        val reversedString = numberString.reversed()
-        val stringBuilder = StringBuilder()
-
-        for ((index, char) in reversedString.withIndex()) {
-            stringBuilder.append(char)
-            if ((index + 1) % 3 == 0 && (index + 1) != reversedString.length) {
-                stringBuilder.append(',')
-            }
-        }
-
-        return stringBuilder.reverse().toString()
     }
 
 }

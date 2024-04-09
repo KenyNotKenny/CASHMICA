@@ -1,4 +1,4 @@
-package view
+package view.composable
 
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.FastOutSlowInEasing

@@ -1,17 +1,13 @@
 package model
 
-import androidx.compose.runtime.MutableState
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.gotrue.Auth
 import io.github.jan.supabase.gotrue.auth
-import io.github.jan.supabase.gotrue.providers.builtin.Email
 import io.github.jan.supabase.gotrue.user.UserInfo
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.PropertyConversionMethod
-import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.put
 
 class SupabaseService {
     companion object{
@@ -36,39 +32,39 @@ class SupabaseService {
 //            }
 //            install(Auth)
 //        }
-
-        suspend fun signUpEmail(em: String, pw: String, name: String): Result<String>{
-            try {
-                val signUpResult = supabase.auth.signUpWith(Email){
-                    email = em
-                    password = pw
-                }
-                supabase.auth.modifyUser {
-                    data {
-                        put("display_name", name)
-                        put("cashmicoin", 0)
-                    }
-                }
-
-                return Result.success("Sign up success")
-
-
-            } catch (e: Exception) {
-                // Handle other exceptions
-                println("Sign up fail")
-                return Result.failure(Exception("Sign up fail!"))
-            }
-        }
-        suspend fun logOut(){
-            try {
-                supabase.auth.signOut()
-            }
-            catch (e: Exception){}
-            finally {
-
-            }
-        }
-        suspend fun getCurrentUser():UserInfo = SupabaseService.supabase.auth.retrieveUserForCurrentSession(updateSession = true)
+//
+//        suspend fun signUpEmail(em: String, pw: String, name: String): Result<String>{
+//            try {
+//                val signUpResult = supabase.auth.signUpWith(Email){
+//                    email = em
+//                    password = pw
+//                }
+//                supabase.auth.modifyUser {
+//                    data {
+//                        put("display_name", name)
+//                        put("cashmicoin", 0)
+//                    }
+//                }
+//
+//                return Result.success("Sign up success")
+//
+//
+//            } catch (e: Exception) {
+//                // Handle other exceptions
+//                println("Sign up fail")
+//                return Result.failure(Exception("Sign up fail!"))
+//            }
+//        }
+//        suspend fun logOut(){
+//            try {
+//                supabase.auth.signOut()
+//            }
+//            catch (e: Exception){}
+//            finally {
+//
+//            }
+//        }
+        suspend fun getCurrentUser():UserInfo = supabase.auth.retrieveUserForCurrentSession(updateSession = true)
 
 
     }
@@ -122,16 +118,4 @@ data class SubmitableSeller(
     val name: String,
     val address: String? = null,
     val link: String? = null,
-)
-@Serializable
-data class Entry(
-    val id: Int,
-    val name: String,
-    val address: String?,
-    val link: String?,
-)
-@Serializable
-data class Test(
-    val id: Int,
-    val name: String,
 )

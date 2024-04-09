@@ -41,6 +41,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
+import com.hoc081098.kmp.viewmodel.compose.kmpViewModel
+import com.hoc081098.kmp.viewmodel.createSavedStateHandle
+import com.hoc081098.kmp.viewmodel.viewModelFactory
 import io.github.jan.supabase.gotrue.user.UserInfo
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
@@ -49,42 +52,18 @@ import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import model.EntrytDetail
-import model.Seller
 import model.SummaryPrize
 import model.SupabaseService
+import view.composable.CreateSellerPopup
+import view.composable.DetailTab
+import view.composable.SuccessPopup
+import view.composable.UploadImagePopup
 import view.composable.UploadTab
+import viewModel.ItemScreenViewModel
+import viewModel.MainScreenViewModel
 
 class ItemScreen(private val summaryPrize: SummaryPrize, private val navigator: Navigator, private val userInfo: UserInfo?): Screen {
-    var entriesList = mutableListOf<EntrytDetail>()
-    var sellerList = mutableListOf<Seller>()
 
-    init {
-        runBlocking {
-            launch {
-                entriesList.clear()
-                entriesList.addAll(
-                    SupabaseService.supabase
-                        .from("entry")
-                        .select(columns = Columns.list("item_id, seller_id(id, name, address, link), user_id, expired_date, price"))
-                        {
-                            filter {
-                                eq("item_id", summaryPrize.item_id.id)
-                            }
-                        }
-                        .decodeList<EntrytDetail>())
-                println("update entries")
-
-//                SupabaseService.supabaseAlt.auth.signInWith(Email){
-//                    email = "keny7503@gmail.com"
-//                    password = "wasd1234"
-//                }
-//                SupabaseService.supabaseAlt.auth.signOut()
-//                println(SupabaseService.supabaseAlt.from("class").select(columns = Columns.list("id, name")) {  }.decodeList<Test>())
-
-
-            }
-        }
-    }
 
     @Composable
     override fun Content() {
@@ -92,6 +71,12 @@ class ItemScreen(private val summaryPrize: SummaryPrize, private val navigator: 
 //        composableScope.launch{
 //
 //        }
+        val viewModel: ItemScreenViewModel = kmpViewModel(
+            factory = viewModelFactory {
+                ItemScreenViewModel(savedStateHandle = createSavedStateHandle(), summaryPrize)
+            }
+        )
+        var throwChangeImagePopup = remember { mutableStateOf(false) }
         var selectedIndex by remember { mutableStateOf(0) }
 
         Box(modifier = Modifier.fillMaxSize()){
@@ -110,7 +95,9 @@ class ItemScreen(private val summaryPrize: SummaryPrize, private val navigator: 
 
                     BackButton(onClick = {navigator.pop()})
                     if(selectedIndex ==1){
-                        Text(modifier = Modifier.align(Alignment.TopEnd).padding(10.dp),
+                        Text(modifier = Modifier.align(Alignment.TopEnd).padding(10.dp).clickable {
+                                                                                                  throwChangeImagePopup.value = true
+                        },
                             text = "✎ change image",
                             fontSize = 20.sp,
                             color = Color(0xFF8F00FF))
@@ -150,7 +137,7 @@ class ItemScreen(private val summaryPrize: SummaryPrize, private val navigator: 
 
                         ){ selectedTab ->
                             if(selectedTab==0){
-                                DetailTab()
+                                DetailTab(viewModel = viewModel)
                             }else{
                                 UploadTab(navigator = navigator , userInfo = userInfo , item_id = summaryPrize.item_id.id)
                             }
@@ -166,6 +153,14 @@ class ItemScreen(private val summaryPrize: SummaryPrize, private val navigator: 
 
                 }
             }
+        }
+        when{
+            throwChangeImagePopup.value ->{
+                UploadImagePopup(onDismissRequest =  {
+                    throwChangeImagePopup.value = false
+                    navigator.pop() }, item_id = summaryPrize.item_id.id)
+            }
+
         }
 
     }
@@ -236,56 +231,6 @@ class ItemScreen(private val summaryPrize: SummaryPrize, private val navigator: 
 
     }
 
-    @Composable
-    fun DetailTab(){
-        Box(modifier =Modifier.fillMaxSize()){
-            Column(modifier = Modifier) {
-                Box(modifier = Modifier.fillMaxWidth().height(60.dp)) {
-                    Text(
-                        modifier = Modifier.align(Alignment.CenterEnd),
-                        text= summaryPrize.average_prize.addCommas()+" vnđ",
-                        fontSize = 35.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colors.onBackground)
-                }
-                Box(modifier = Modifier.fillMaxWidth().height(60.dp)) {
-                    Text(
-                        modifier = Modifier.align(Alignment.CenterStart)
-                            .clickable {  },
-                        text="Lowest ▼",
-                        fontSize = 25.sp,
-                        color = Color.Gray)
-                    Text(
-                        modifier = Modifier.align(Alignment.CenterEnd),
-                        text= summaryPrize.min_prize.addCommas() +" vnd",
-                        fontSize = 30.sp,
-                        color = MaterialTheme.colors.onBackground)
-                }
-                LazyColumn {
-                    items(entriesList){ entry ->
-                        Box(modifier = Modifier.fillMaxWidth().height(80.dp)) {
-                            Text(
-                                modifier = Modifier.align(Alignment.BottomStart),
-                                text= entry.seller_id.name,
-                                fontSize = 25.sp,
-                                color = Color.Gray)
-                            Text(
-                                modifier = Modifier.align(Alignment.TopEnd),
-                                text= entry.price.addCommas()+" vnđ",
-                                fontSize = 30.sp,
-                                color = MaterialTheme.colors.onBackground)
-                        }
-                    }
-                }
-            }
-//            Text(
-//                modifier = Modifier.align(Alignment.Center),
-//                text= "Buy premium to unlock this feature",
-//                fontSize = 20.sp,
-//                color = MaterialTheme.colors.onBackground)
-        }
-
-    }
 
 
 

@@ -1,4 +1,4 @@
-package com.example.compose
+package view.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.Colors

@@ -48,7 +48,7 @@ class LoadingScreen: Screen {
                 try{
                     session = SupabaseService.supabase.auth.currentSessionOrNull()
                     if( session!= null){
-                        navigator.push(MainScreen())
+                        navigator.replace(MainScreen())
                         return@launch
                     }
                 }catch (e: Exception){
@@ -58,7 +58,7 @@ class LoadingScreen: Screen {
                 timeout--
             }
             println("Timeout ")
-            navigator.push(LoginScreen())
+            navigator.replace(LoginScreen())
 
         }
     }
