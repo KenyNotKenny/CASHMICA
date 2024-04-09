@@ -19,7 +19,6 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,7 +34,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.launch
-import model.Seller
 import model.SubmitableSeller
 import model.SupabaseService
 
@@ -50,11 +48,11 @@ fun CreateSellerPopup(onDismissRequest: () -> Unit) {
         ) {
             val composableScope = rememberCoroutineScope()
             var nameText  by remember { mutableStateOf("") }
-            var isLocal  = remember { mutableStateOf(true) }
+            val isLocal  = remember { mutableStateOf(true) }
             var linkOrAddressText  by remember { mutableStateOf("") }
-            var seller = SubmitableSeller(name = nameText, address = if(isLocal.value) linkOrAddressText else null, link = if(!isLocal.value) linkOrAddressText else null )
+            val seller = SubmitableSeller(name = nameText, address = if(isLocal.value) linkOrAddressText else null, link = if(!isLocal.value) linkOrAddressText else null )
             var isError by remember { mutableStateOf(false) }
-            var throwPopup = remember { mutableStateOf(false) }
+            val throwPopup = remember { mutableStateOf(false) }
 
 
             Box(Modifier.fillMaxSize()){
@@ -121,7 +119,7 @@ fun CreateSellerPopup(onDismissRequest: () -> Unit) {
                     Button(
                         modifier = Modifier.align(Alignment.End).padding(10.dp),
                         onClick = {
-                            if(!nameText.isEmpty() && !linkOrAddressText.isEmpty()){
+                            if(nameText.isNotEmpty() && linkOrAddressText.isNotEmpty()){
                                 composableScope.launch {
                                     SupabaseService.supabase.from("seller").insert(seller)
                                     throwPopup.value = true

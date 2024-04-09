@@ -2,7 +2,6 @@ package view.composable
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -11,10 +10,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Card
-import androidx.compose.material.Checkbox
-import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -34,7 +30,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.launch
-import model.SubmitableSeller
 import model.SupabaseService
 
 @Composable
@@ -49,7 +44,7 @@ fun UploadImagePopup(onDismissRequest: () -> Unit, item_id:Int ) {
             val composableScope = rememberCoroutineScope()
             var nameText  by remember { mutableStateOf("") }
             var isError by remember { mutableStateOf(false) }
-            var throwPopup = remember { mutableStateOf(false) }
+            val throwPopup = remember { mutableStateOf(false) }
 
 
             Box(Modifier.fillMaxSize()){
@@ -74,7 +69,7 @@ fun UploadImagePopup(onDismissRequest: () -> Unit, item_id:Int ) {
                     Button(
                         modifier = Modifier.align(Alignment.End).padding(10.dp),
                         onClick = {
-                            if(!nameText.isEmpty()){
+                            if(nameText.isNotEmpty()){
                                 composableScope.launch {
                                     SupabaseService.supabase.from("item").update({
                                         set("image",nameText)

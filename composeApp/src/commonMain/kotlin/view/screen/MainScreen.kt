@@ -1,4 +1,4 @@
-package view
+package view.screen
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize

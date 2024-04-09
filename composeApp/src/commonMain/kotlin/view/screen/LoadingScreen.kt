@@ -1,4 +1,4 @@
-package view
+package view.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable

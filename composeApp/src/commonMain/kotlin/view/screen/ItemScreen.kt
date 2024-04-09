@@ -1,4 +1,4 @@
-package view
+package view.screen
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.slideInHorizontally
@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Tab
@@ -31,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -45,22 +42,13 @@ import com.hoc081098.kmp.viewmodel.compose.kmpViewModel
 import com.hoc081098.kmp.viewmodel.createSavedStateHandle
 import com.hoc081098.kmp.viewmodel.viewModelFactory
 import io.github.jan.supabase.gotrue.user.UserInfo
-import io.github.jan.supabase.postgrest.from
-import io.github.jan.supabase.postgrest.query.Columns
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import model.EntrytDetail
 import model.SummaryPrize
-import model.SupabaseService
-import view.composable.CreateSellerPopup
 import view.composable.DetailTab
-import view.composable.SuccessPopup
 import view.composable.UploadImagePopup
 import view.composable.UploadTab
 import viewModel.ItemScreenViewModel
-import viewModel.MainScreenViewModel
 
 class ItemScreen(private val summaryPrize: SummaryPrize, private val navigator: Navigator, private val userInfo: UserInfo?): Screen {
 
@@ -76,7 +64,7 @@ class ItemScreen(private val summaryPrize: SummaryPrize, private val navigator: 
                 ItemScreenViewModel(savedStateHandle = createSavedStateHandle(), summaryPrize)
             }
         )
-        var throwChangeImagePopup = remember { mutableStateOf(false) }
+        val throwChangeImagePopup = remember { mutableStateOf(false) }
         var selectedIndex by remember { mutableStateOf(0) }
 
         Box(modifier = Modifier.fillMaxSize()){
@@ -231,23 +219,4 @@ class ItemScreen(private val summaryPrize: SummaryPrize, private val navigator: 
 
     }
 
-
-
-
-
-
-    fun Int.addCommas(): String {
-        val numberString = this.toString()
-        val reversedString = numberString.reversed()
-        val stringBuilder = StringBuilder()
-
-        for ((index, char) in reversedString.withIndex()) {
-            stringBuilder.append(char)
-            if ((index + 1) % 3 == 0 && (index + 1) != reversedString.length) {
-                stringBuilder.append(',')
-            }
-        }
-
-        return stringBuilder.reverse().toString()
-    }
 }

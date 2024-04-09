@@ -55,7 +55,7 @@ import model.SupabaseService
 
 @Composable
 fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, submitableItem:SubmitableItem? = null ){
-    var sellerList = remember { mutableStateListOf<Seller>()}
+    val sellerList = remember { mutableStateListOf<Seller>()}
     var seller_id by remember { mutableStateOf<Int?>(null) }
     val composableScope = rememberCoroutineScope()
     var priceText by remember { mutableStateOf("") }
@@ -65,23 +65,23 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
     var yearText by remember { mutableStateOf("") }
     var sellerListShow by remember { mutableStateOf(false) }
     var submitButtonVisible by remember { mutableStateOf(false) }
-    var throwPopup = remember { mutableStateOf(false) }
-    var createSellerPopup = remember { mutableStateOf(false) }
-    var entry: SubmitableEntry = SubmitableEntry(
+    val throwPopup = remember { mutableStateOf(false) }
+    val createSellerPopup = remember { mutableStateOf(false) }
+    var entry = SubmitableEntry(
         item_id = item_id,
         seller_id = 1 ,
         user_id = userInfo!!.id,
         expired_date = LocalDate(dayOfMonth = 1, monthNumber = 1, year = 1),
         price = 0
     )
-    println(priceText+";"+dayText+""+seller_id)
+    println("$priceText;$dayText$seller_id")
     if(seller_id==null || priceText.isEmpty()|| dayText.isEmpty() || monthText.isEmpty()|| yearText.isEmpty()){
         submitButtonVisible = false
     }else{
         entry = SubmitableEntry(
             item_id = item_id,
             seller_id = seller_id!! ,
-            user_id = userInfo!!.id,
+            user_id = userInfo.id,
             expired_date = LocalDate(dayOfMonth = dayText.toInt(), monthNumber = monthText.toInt(), year = yearText.toInt()),
             price = priceText.toInt()
         )
@@ -125,7 +125,7 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
                                     .from("seller")
                                     .select( columns = Columns.list("id, name, address, link")) {
                                         filter {
-                                            ilike("name","%"+sellerText+"%")
+                                            ilike("name", "%$sellerText%")
                                         }
                                     }
                                     .decodeList<Seller>()
@@ -185,7 +185,7 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
                 }
 
             }
-            Row(modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp),) {
+            Row(modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 10.dp)) {
                 Text(
                     text = "Seller isn't listed? ",
                     color = Color.Gray,

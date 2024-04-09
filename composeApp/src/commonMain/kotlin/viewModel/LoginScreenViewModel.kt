@@ -4,10 +4,8 @@ import com.hoc081098.kmp.viewmodel.SavedStateHandle
 import com.hoc081098.kmp.viewmodel.ViewModel
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.providers.builtin.Email
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.json.put
 import model.SupabaseService
-import view.MainScreen
 
 class LoginScreenViewModel(
     private val savedStateHandle: SavedStateHandle,
