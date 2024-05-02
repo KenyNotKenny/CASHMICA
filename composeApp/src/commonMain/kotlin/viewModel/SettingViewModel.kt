@@ -1,5 +1,0 @@
-package viewModel
-
-class SettingViewModel {
-
-}

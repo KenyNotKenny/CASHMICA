@@ -12,7 +12,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun CustomTextField(modifier: Modifier = Modifier, value: String, onValueChange: (String) -> Unit, textStyle: TextStyle){
+fun CustomTextField(modifier: Modifier = Modifier, value: String, onValueChange: (String) -> Unit, textStyle: TextStyle, keyboardOptions: KeyboardOptions){
     TextField( modifier = modifier.height(80.dp),
         singleLine = true,
         maxLines = 1,
@@ -23,6 +23,6 @@ fun CustomTextField(modifier: Modifier = Modifier, value: String, onValueChange:
             unfocusedIndicatorColor = Color(0xFF8F00FF)
         ),
         textStyle = textStyle,
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+        keyboardOptions = keyboardOptions,
     )
 }

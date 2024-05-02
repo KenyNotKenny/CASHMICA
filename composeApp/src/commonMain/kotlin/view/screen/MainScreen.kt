@@ -132,6 +132,7 @@ class MainScreen : Screen {
                     Box(modifier = Modifier.align(Alignment.CenterEnd)){
                         this@Column.AnimatedVisibility(!firstSearch){
                             Text( modifier = Modifier.align(Alignment.CenterEnd),
+                                fontSize = 16.sp,
                                 text=("Welcome, "+ viewModel.userName)+"! You have "+viewModel.cashmicoin +" CASHMICOIN",
                                 color = MaterialTheme.colors.background
                             )

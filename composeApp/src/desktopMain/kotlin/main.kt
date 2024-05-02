@@ -12,7 +12,8 @@ fun main() = application {
         title = "CASHMICA",
         state = WindowState(width = windowHeight.dp, height = (windowHeight*(20/9)).dp),
         resizable = true,
-        icon = painterResource("drawable/logo.png")) {
+        icon = painterResource("drawable/logo.png")
+    ) {
         App()
         Toolkit.getDefaultToolkit().screenSize.height
     }

@@ -63,7 +63,7 @@ fun UploadImagePopup(onDismissRequest: () -> Unit, item_id:Int ) {
                         maxLines = 1,
                         onValueChange = { nameText = it },
                         shape = RoundedCornerShape(percent = 100),
-                        label = { Text("Item URL") },
+                        label = { Text("Image URL") },
                         isError = isError
                     )
                     Button(

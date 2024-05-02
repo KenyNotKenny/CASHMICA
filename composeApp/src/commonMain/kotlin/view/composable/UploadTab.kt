@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
@@ -38,6 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -102,7 +104,10 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
                     textStyle = TextStyle(
                         fontWeight = FontWeight.Bold,
                         fontSize = 26.sp,
-                        textAlign = TextAlign.End),)
+                        textAlign = TextAlign.End),
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+                    )
+
                 Text(modifier = Modifier.align(Alignment.CenterVertically),
                     text = "vnđ",
                     color = Color.Black,
@@ -138,7 +143,9 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
                                     },
                     textStyle = TextStyle(
                         fontSize = 24.sp,
-                        textAlign = TextAlign.End),)
+                        textAlign = TextAlign.End),
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text)
+                    )
                 Icon(modifier = Modifier.align(Alignment.CenterVertically).fillMaxHeight(0.7f).aspectRatio(1f)
                     .clickable {
                         sellerListShow = !sellerListShow
@@ -209,7 +216,9 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
                     onValueChange = { if(it.all { char -> char.isDigit() }&& it.length<=2){ dayText=it}},
                     textStyle = TextStyle(
                         fontSize = 24.sp,
-                        textAlign = TextAlign.End),)
+                        textAlign = TextAlign.End),
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+                    )
                 Text(modifier = Modifier.align(Alignment.CenterVertically),
                     text = "/",
                     color = Color(0xFF8F00FF),
@@ -220,7 +229,9 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
                     onValueChange = { if(it.all { char -> char.isDigit() }&& it.length<=2){ monthText=it}},
                     textStyle = TextStyle(
                         fontSize = 24.sp,
-                        textAlign = TextAlign.End),)
+                        textAlign = TextAlign.End),
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+                    )
                 Text(modifier = Modifier.align(Alignment.CenterVertically),
                     text = "/",
                     color = Color(0xFF8F00FF),
@@ -231,7 +242,9 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
                     onValueChange = { if(it.all{ char -> char.isDigit() } && it.length<=4){ yearText=it}},
                     textStyle = TextStyle(
                         fontSize = 24.sp,
-                        textAlign = TextAlign.End),)
+                        textAlign = TextAlign.End),
+                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+                    )
 
             }
             Spacer(Modifier.height(10.dp))

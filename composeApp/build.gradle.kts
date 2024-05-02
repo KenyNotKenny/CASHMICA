@@ -80,7 +80,6 @@ kotlin {
 
             //Kamel
             implementation("media.kamel:kamel-image:0.9.3")
-            implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
 
             //Viewmodel
             implementation("io.github.hoc081098:kmp-viewmodel-compose:0.7.1")
@@ -90,11 +89,10 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation("io.ktor:ktor-client-java:$ktorVersion")
+
         }
         iosMain.dependencies {
             implementation("io.ktor:ktor-client-darwin:$ktorVersion")
-
-            implementation("io.ktor:ktor-client-darwin:2.3.7")
         }
         jvmMain.dependencies {
             implementation("io.ktor:ktor-client-java:$ktorVersion")
@@ -126,6 +124,7 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -137,6 +136,9 @@ android {
     }
 }
 
+
+
+
 compose.desktop {
     application {
         mainClass = "MainKt"
@@ -146,5 +148,20 @@ compose.desktop {
             packageName = "org.littlebutenough.cashmica"
             packageVersion = "1.0.0"
         }
+
+        tasks.withType<Jar> {
+            manifest {
+                attributes["Main-Class"] = "MainKt"
+            }
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+
+
+        }
     }
 }
+
+
+
+
+

@@ -1,15 +1,19 @@
 package view.composable
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,11 +25,17 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.Navigator
@@ -41,7 +51,13 @@ fun ItemCard(summaryPrize: SummaryPrize, navigator: Navigator, viewModel: MainSc
     Box(modifier = Modifier
         .fillMaxWidth()
         .height(180.dp)
-        .clip(RoundedCornerShape(30.dp))){
+        .clip(RoundedCornerShape(30.dp))
+        .clickable { onClick()
+            navigator.push(ItemScreen( summaryPrize = summaryPrize,
+                                            navigator = navigator,
+                                            userInfo = viewModel.userInfo))
+
+        }){
         Box(modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colors.background)){
@@ -67,27 +83,65 @@ fun ItemCard(summaryPrize: SummaryPrize, navigator: Navigator, viewModel: MainSc
                 }
                 Box(modifier = Modifier.fillMaxSize()){
                     Box( modifier =  Modifier
-                        .fillMaxHeight(0.8f)
-                        .fillMaxWidth(0.9f)
+                        .fillMaxHeight()
+                        .fillMaxWidth()
                         .align(Alignment.Center)){
-                        Text(text = summaryPrize.item_name.truncateString(26),
+                        Text(modifier = Modifier.padding(10.dp),
+                            text = summaryPrize.item_name.truncateString(26),
                             fontWeight = FontWeight.Bold,
-                            fontSize = 27.sp,
+                            fontSize = 24.sp,
                             color = MaterialTheme.colors.onBackground
                         )
                         Box(
                             modifier = Modifier
                                 .align(Alignment.BottomStart)
-                                .fillMaxWidth(0.9f)
+                                .fillMaxWidth()
                                 .wrapContentHeight()
                         ) {
-                            Text(
-                                modifier = Modifier.align(Alignment.CenterStart),
-                                text =  summaryPrize.average_prize.addCommas() +" vnđ",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 22.sp,
-                                color = MaterialTheme.colors.onBackground
-                            )
+                            var size by remember { mutableStateOf(IntSize.Zero) }
+                            Row(modifier = Modifier.fillMaxWidth().height(50.dp).fillMaxWidth()
+                                .onSizeChanged {
+                                size = it
+                            },
+                                horizontalArrangement = Arrangement.End) {
+//                                AutoResizedText(
+//                                    modifier = Modifier.padding(10.dp).fillMaxSize(),
+//                                    text =  summaryPrize.average_prize.addCommas() +" vnđ",
+//                                    color = MaterialTheme.colors.onBackground,
+//
+//                                )
+                                Text(
+                                    modifier = Modifier.wrapContentWidth().padding(10.dp),
+                                    text =  summaryPrize.average_prize.addCommas() +" vnđ",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = if(size.width > 300)24 else{18}.sp,
+                                    color = MaterialTheme.colors.onBackground
+                                )
+//                                Button(onClick = { onClick()
+//                                    navigator.push(
+//                                        ItemScreen( summaryPrize = summaryPrize,
+//                                            navigator = navigator,
+//                                            userInfo = viewModel.userInfo)
+//                                    )},
+//                                    modifier= Modifier.height(50.dp).wrapContentWidth(),  //avoid the oval shape
+//                                    shape = RoundedCornerShape(topStart = 30.dp),
+//                                    contentPadding = PaddingValues(0.dp),  //avoid the little icon
+//                                    colors = ButtonDefaults.buttonColors(
+//                                        backgroundColor =  MaterialTheme.colors.primary,
+//                                        contentColor = MaterialTheme.colors.onPrimary
+//                                    )
+//                                ) {
+//                                    Text(
+//                                        modifier = Modifier.padding(10.dp).defaultMinSize(minWidth = 50.dp),
+//                                        text = "More",
+//                                        fontSize = 22.sp,
+//                                        color = MaterialTheme.colors.background)
+//                                    Icon(imageVector =  Icons.AutoMirrored.Filled.ArrowForward,
+//                                        contentDescription = "More",
+//                                        tint = MaterialTheme.colors.background)
+//                                }
+                            }
+
 
 
                         }
@@ -95,29 +149,7 @@ fun ItemCard(summaryPrize: SummaryPrize, navigator: Navigator, viewModel: MainSc
                 }
             }
         }
-        Button(onClick = { onClick()
-            navigator.push(
-                ItemScreen( summaryPrize = summaryPrize,
-                    navigator = navigator,
-                    userInfo = viewModel.userInfo)
-            )},
-            modifier= Modifier.height(50.dp).wrapContentWidth().align(Alignment.BottomEnd),  //avoid the oval shape
-            shape = RoundedCornerShape(topStart = 30.dp),
-            contentPadding = PaddingValues(0.dp),  //avoid the little icon
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor =  MaterialTheme.colors.primary,
-                contentColor = MaterialTheme.colors.onPrimary
-            )
-        ) {
-            Text(
-                modifier = Modifier.padding(10.dp),
-                text = "More",
-                fontSize = 22.sp,
-                color = MaterialTheme.colors.background)
-            Icon(imageVector =  Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = "More",
-                tint = MaterialTheme.colors.background)
-        }
+
     }
 }
 fun Int.addCommas(): String {
