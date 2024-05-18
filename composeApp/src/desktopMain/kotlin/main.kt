@@ -14,7 +14,6 @@ fun main() = application {
         resizable = true,
         icon = painterResource("drawable/logo.png")
     ) {
-        //post-migration test commit
         App()
         Toolkit.getDefaultToolkit().screenSize.height
     }

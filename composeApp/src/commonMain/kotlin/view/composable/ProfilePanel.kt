@@ -18,6 +18,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.jan.supabase.storage.storage
+import io.kamel.image.KamelImage
+import io.kamel.image.asyncPainterResource
+import model.SupabaseService
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
@@ -25,11 +29,13 @@ import org.jetbrains.compose.resources.painterResource
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun ProfilePanel(modifier: Modifier, userName:String , cashmicoin:Int){
+    val url = SupabaseService.supabase.storage.from("item_image").publicUrl("milo.jpg")
     Column(modifier = modifier,
         verticalArrangement = Arrangement.Bottom){
         Image( modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(0.6f),
             painter = painterResource(DrawableResource("drawable/logo_t.png")),
             contentDescription = null)
+
         Text(
             modifier = Modifier.align(Alignment.CenterHorizontally),
             text= "Welcome, $userName!",

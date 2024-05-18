@@ -36,8 +36,9 @@ kotlin {
     val ktorVersion = "2.3.7"
     val sqlDelightVersion = "1.5.5"
     val dateTimeVersion = "0.4.1"
-    val postgrestVersion = "2.1.5"
-    val gotrueVersion = "2.1.5"
+    val postgrestVersion = "2.4.1"
+    val gotrueVersion = "2.4.1"
+    val storageVersion = "2.4.1"
     val coilVersion ="3.0.0-alpha01"
 
 
@@ -69,6 +70,8 @@ kotlin {
             //supabase
             implementation("io.github.jan-tennert.supabase:postgrest-kt:$postgrestVersion")
             implementation("io.github.jan-tennert.supabase:gotrue-kt:$gotrueVersion")
+            implementation("io.github.jan-tennert.supabase:storage-kt:$storageVersion")
+
 
             //Corountine
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
@@ -83,6 +86,9 @@ kotlin {
 
             //Viewmodel
             implementation("io.github.hoc081098:kmp-viewmodel-compose:0.7.1")
+
+            //Calf
+            api("com.mohamedrejeb.calf:calf-ui:0.4.0")
 
 
         }

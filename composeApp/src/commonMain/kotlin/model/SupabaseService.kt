@@ -6,8 +6,10 @@ import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.user.UserInfo
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.PropertyConversionMethod
+import io.github.jan.supabase.storage.Storage
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
+import kotlin.time.Duration.Companion.seconds
 
 class SupabaseService {
     companion object{
@@ -20,6 +22,9 @@ class SupabaseService {
                 propertyConversionMethod = PropertyConversionMethod.CAMEL_CASE_TO_SNAKE_CASE // default: PropertyConversionMethod.CAMEL_CASE_TO_SNAKE_CASE
             }
             install(Auth)
+            install(Storage) {
+                transferTimeout = 90.seconds // Default: 120 seconds
+            }
         }
         suspend fun getCurrentUser():UserInfo = supabase.auth.retrieveUserForCurrentSession(updateSession = true)
     }
