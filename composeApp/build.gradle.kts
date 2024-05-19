@@ -89,6 +89,7 @@ kotlin {
 
             //Calf
             api("com.mohamedrejeb.calf:calf-ui:0.4.0")
+            implementation("com.mohamedrejeb.calf:calf-file-picker:0.4.0")
 
 
         }

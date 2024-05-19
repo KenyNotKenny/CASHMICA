@@ -32,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,10 +46,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
+import com.mohamedrejeb.calf.core.LocalPlatformContext
+import com.mohamedrejeb.calf.io.readByteArray
+import com.mohamedrejeb.calf.picker.FilePickerFileType
+import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
+import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
 import io.github.jan.supabase.gotrue.user.UserInfo
+import io.github.jan.supabase.storage.storage
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import kotlinx.coroutines.launch
 import model.SubmitableItem
+import model.SupabaseService
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
@@ -64,6 +73,7 @@ class CreateItemSrceen(private val navigator: Navigator, private val userInfo: U
         var nameText by remember { mutableStateOf("") }
         var previewImageURL by remember { mutableStateOf("") }
         var error by remember { mutableStateOf(false) }
+        println(item.image)
 
         Box(modifier = Modifier.fillMaxSize()){
             Column(modifier = Modifier.fillMaxSize()){
@@ -124,7 +134,7 @@ class CreateItemSrceen(private val navigator: Navigator, private val userInfo: U
                         ){ selectedTab ->
                             if(selectedTab==0){
                                 ItemCreatePanel(imageURL = previewImageURL,onPreviewCheck = { previewImageURL = it}, nameText = nameText, onNameChange = {nameText = it},
-                                    isError = error)
+                                    isError = error, onUpload = {previewImageURL = it})
                             }else{
                                 UploadTab(navigator = navigator ,userInfo = userInfo, submitableItem = item )
                             }
@@ -155,7 +165,7 @@ class CreateItemSrceen(private val navigator: Navigator, private val userInfo: U
     }
 
     @Composable
-    fun ItemCreatePanel(imageURL:String, onPreviewCheck:(String) -> Unit,nameText:String, onNameChange:(String)-> Unit, isError:Boolean){
+    fun ItemCreatePanel(imageURL:String, onPreviewCheck:(String) -> Unit,nameText:String, onNameChange:(String)-> Unit, isError:Boolean, onUpload:(String)->Unit){
         var imageText by remember { mutableStateOf(imageURL) }
         Column(modifier = Modifier.fillMaxWidth()){
             TextField(
@@ -174,30 +184,48 @@ class CreateItemSrceen(private val navigator: Navigator, private val userInfo: U
             )
             Spacer(Modifier.size(10.dp))
             Text(
-                text = "Preview image URL: ",
+                text = "Select image from your device ",
                 color = Color.Black,
                 fontSize = 24.sp)
-            TextField(
-                modifier = Modifier.fillMaxWidth().height(60.dp),
-                value = imageText,
-                onValueChange = { imageText = it },
-                placeholder = { Text(text = "https:/example.[png/jpg]",
-                    fontSize = 20.sp,)
-                },
-                textStyle = TextStyle(
-                    fontSize = 20.sp,
-                ),
-                colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.Transparent),
-                isError = isError
-
-            )
+//            TextField(
+//                modifier = Modifier.fillMaxWidth().height(60.dp),
+//                value = imageText,
+//                onValueChange = { imageText = it },
+//                placeholder = { Text(text = "https:/example.[png/jpg]",
+//                    fontSize = 20.sp,)
+//                },
+//                textStyle = TextStyle(
+//                    fontSize = 20.sp,
+//                ),
+//                colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.Transparent),
+//                isError = isError
+//
+//            )
             Spacer(Modifier.size(10.dp))
+            val scope = rememberCoroutineScope()
+            val context = LocalPlatformContext.current
+            val pickerLauncher = rememberFilePickerLauncher(
+                type = FilePickerFileType.Image,
+                selectionMode = FilePickerSelectionMode.Single,
+                onResult = { files ->
+                    scope.launch {
+                        files.firstOrNull()?.let { file ->
+                            // Do something with the selected file
+                            // You can get the ByteArray of the file
+                            val bucket = SupabaseService.supabase.storage.from("item_image")
+                            bucket.upload("$nameText.png", file.readByteArray(context), upsert = true)
+                            onUpload(SupabaseService.supabase.storage.from("item_image").publicUrl("$nameText.png"))
+                        }
+                    }
+                }
+            )
             Button(modifier = Modifier.align(Alignment.End).height(60.dp),
                 shape = RoundedCornerShape(percent = 100),
                 onClick = {
-                    onPreviewCheck(imageText)
+//                    onPreviewCheck(imageText)
+                    pickerLauncher.launch()
                 }){
-                Text(text = "Check image",
+                Text(text = "Upload image",
                     color = MaterialTheme.colors.background,
                     fontSize = 20.sp,)
             }
