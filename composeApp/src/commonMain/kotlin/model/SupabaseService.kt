@@ -57,13 +57,16 @@ data class SubmitableEntry(
 data class Item(
     val id: Int,
     val name: String,
-    val image: String?
+    val image: String?,
 )
 @Serializable
 data class SubmitableItem(
     var name: String?,
-    var image: String?
+    var image: String?,
+    var description: String?,
+    var category: Int?,
 )
+
 @Serializable
 data class Seller(
     val id: Int,
@@ -76,4 +79,9 @@ data class SubmitableSeller(
     val name: String,
     val address: String? = null,
     val link: String? = null,
+)
+@Serializable
+data class Category(
+    val id: Int,
+    val name: String,
 )

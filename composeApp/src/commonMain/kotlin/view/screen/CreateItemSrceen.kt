@@ -20,6 +20,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ExposedDropdownMenuBox
+import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Tab
@@ -34,6 +38,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,10 +57,15 @@ import com.mohamedrejeb.calf.picker.FilePickerFileType
 import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
 import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
 import io.github.jan.supabase.gotrue.user.UserInfo
+import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.storage.storage
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import model.Category
+import model.Seller
 import model.SubmitableItem
 import model.SupabaseService
 import org.jetbrains.compose.resources.DrawableResource
@@ -64,7 +74,19 @@ import org.jetbrains.compose.resources.painterResource
 import view.composable.UploadTab
 
 class CreateItemSrceen(private val navigator: Navigator, private val userInfo: UserInfo?):Screen {
-    private var item: SubmitableItem = SubmitableItem(null,null)
+    var options = mutableListOf<Category>()
+    private var item: SubmitableItem = SubmitableItem(null,null,null,null)
+    init {
+        runBlocking {
+            options = SupabaseService.supabase
+                    .from("category")
+                    .select( columns = Columns.list("id, name")) {
+                    }
+                    .decodeList<Category>().toMutableList()
+
+
+        }
+    }
 
     @OptIn(ExperimentalResourceApi::class)
     @Composable
@@ -164,9 +186,11 @@ class CreateItemSrceen(private val navigator: Navigator, private val userInfo: U
 
     }
 
+    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     fun ItemCreatePanel(imageURL:String, onPreviewCheck:(String) -> Unit,nameText:String, onNameChange:(String)-> Unit, isError:Boolean, onUpload:(String)->Unit){
         var imageText by remember { mutableStateOf(imageURL) }
+        var decriptionText by remember { mutableStateOf("")}
         Column(modifier = Modifier.fillMaxWidth()){
             TextField(
                 modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth().height(80.dp),
@@ -182,6 +206,63 @@ class CreateItemSrceen(private val navigator: Navigator, private val userInfo: U
                 colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.Transparent),
                 isError = isError
             )
+            TextField(
+                modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth().height(80.dp),
+                value = decriptionText,
+                onValueChange = { decriptionText = it
+                                item.description = decriptionText},
+                placeholder = { Text(text = "Description",
+                    fontSize = 25.sp,
+                    fontWeight = FontWeight.Bold)
+                },
+                textStyle = TextStyle( fontSize = 25.sp),
+                colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.Transparent),
+                isError = isError
+            )
+
+            var expanded by remember { mutableStateOf(false) }
+            var selectedOptionText by remember { mutableStateOf(options[0]) }
+
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = {
+                    expanded = !expanded
+                }
+            ) {
+                TextField(
+                    modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth().height(80.dp),
+                    readOnly = true,
+                    value = selectedOptionText.name,
+                    onValueChange = { },
+                    label = { Text("Category") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(
+                            expanded = expanded
+                        )
+                    },
+                    colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.Transparent),
+                    )
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = {
+                        expanded = false
+                    }
+                ) {
+                    options.forEach { selectionOption ->
+                        DropdownMenuItem(
+                            onClick = {
+                                selectedOptionText = selectionOption
+                                expanded = false
+                                item.category = selectedOptionText.id
+                            }
+                        ){
+                            Text(
+                                modifier = Modifier.fillMaxWidth().height(80.dp),
+                                text = selectionOption.name)
+                        }
+                    }
+                }
+            }
             Spacer(Modifier.size(10.dp))
             Text(
                 text = "Select image from your device ",
