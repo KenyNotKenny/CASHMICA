@@ -56,6 +56,7 @@ import com.hoc081098.kmp.viewmodel.viewModelFactory
 import io.github.jan.supabase.gotrue.auth
 import kotlinx.coroutines.launch
 import model.SupabaseService
+import view.composable.Filter
 import view.composable.ItemCard
 import view.composable.ItemSearchBar
 import view.composable.ProfilePanel
@@ -151,17 +152,20 @@ class MainScreen : Screen {
             }
             Box(Modifier.fillMaxWidth().height(60.dp)){
 //                Box(modifier = Modifier.align(Alignment.TopCenter).background(MaterialTheme.colors.primary).height(30.dp).fillMaxWidth())
-                Box(modifier = Modifier.align(Alignment.BottomCenter).background(MaterialTheme.colors.surface).height(30.dp).fillMaxWidth())
-                ItemSearchBar(modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter)
-                    .height(60.dp)
-                    .clip(RoundedCornerShape(100.dp)),
-                    viewModel = viewModel,
-                    onClick = {
-                        composableScope.launch{
-                            viewModel.setFirstSearch(false)
-                            viewModel.querryForItemList()
-                        }
-                    })
+                Row(Modifier.fillMaxSize().background(MaterialTheme.colors.surface).height(30.dp)) {
+//                    Box(modifier = Modifier.align(Alignment.CenterVertically).background(MaterialTheme.colors.surface).height(30.dp).fillMaxWidth(0.6f))
+                    ItemSearchBar(modifier = Modifier.fillMaxWidth(0.8f).align(Alignment.CenterVertically)
+                        .height(60.dp)
+                        .clip(RoundedCornerShape(100.dp)),
+                        viewModel = viewModel,
+                        onClick = {
+                            composableScope.launch{
+                                viewModel.setFirstSearch(false)
+                                viewModel.querryForItemList()
+                            }
+                        })
+                    Filter(modifier = Modifier.align(Alignment.CenterVertically))
+                }
             }
             Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colors.surface),
             ){
@@ -233,5 +237,4 @@ class MainScreen : Screen {
     fun SignOutButton(){
         Text("Sign out")
     }
-
 }
