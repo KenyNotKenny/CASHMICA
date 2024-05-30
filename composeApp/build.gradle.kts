@@ -92,6 +92,10 @@ kotlin {
             implementation("com.mohamedrejeb.calf:calf-file-picker:0.4.0")
 
 
+            implementation("io.github.darkokoa:datetime-wheel-picker:1.0.0-beta01")
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+
+
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

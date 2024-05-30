@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
+import model.Category
 import model.SummaryPrize
 import model.SupabaseService
 
@@ -21,6 +22,7 @@ class MainScreenViewModel (
     var userInfo: UserInfo? = null
     var userName: String = "[Username]"
     var cashmicoin: Int = 0
+    var categoryList: List<Category> = emptyList()
 
 
     init {
@@ -29,6 +31,7 @@ class MainScreenViewModel (
                 userInfo = SupabaseService.getCurrentUser()
                 userName = Json.decodeFromJsonElement(userInfo?.userMetadata?.get("display_name")!!)
                 cashmicoin =  Json.decodeFromJsonElement(userInfo?.userMetadata?.get("cashmicoin")!!)
+                categoryList = SupabaseService.supabase.from("category").select(columns = Columns.ALL).decodeList<Category>()
 
             }
         }
@@ -45,7 +48,7 @@ class MainScreenViewModel (
     suspend fun querryForItemList(){
         savedStateHandle["itemList"] = (SupabaseService.supabase
             .from("prize_summary")
-            .select(columns = Columns.list("item_id(id, name, image), item_name, average_prize, max_prize, min_prize")){
+            .select(columns = Columns.list("item_id(id, name, image, description, category), item_name, average_prize, max_prize, min_prize")){
                 filter {
 //                            like("item_name","%"+searchBarText+"%")
                     ilike("item_name","%"+searchBarTextStateFlow.value+"%")

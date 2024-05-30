@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.hoc081098.kmp.viewmodel.compose.kmpViewModel
 import com.hoc081098.kmp.viewmodel.createSavedStateHandle
 import com.hoc081098.kmp.viewmodel.viewModelFactory
@@ -22,14 +23,13 @@ fun Filter(modifier: Modifier) {
         }
     )
     Box(
-        modifier = modifier.fillMaxWidth()
 //            .wrapContentSize(LineHeightStyle.Alignment.TopEnd)
     ) {
         IconButton(onClick = { expanded = !expanded }) {
             Icon(
                 imageVector = Icons.Default.MoreVert,
                 contentDescription = "More",
-                tint = Color.White
+                tint = Color.Black
             )
         }
 
@@ -48,7 +48,5 @@ fun Filter(modifier: Modifier) {
                 }
             }
         }
-        
-        
     }
 }

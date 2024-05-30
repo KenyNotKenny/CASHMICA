@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -34,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -86,12 +88,20 @@ fun ItemCard(summaryPrize: SummaryPrize, navigator: Navigator, viewModel: MainSc
                         .fillMaxHeight()
                         .fillMaxWidth()
                         .align(Alignment.Center)){
-                        Text(modifier = Modifier.padding(10.dp),
-                            text = summaryPrize.item_name.truncateString(26),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 24.sp,
-                            color = MaterialTheme.colors.onBackground
-                        )
+                        Column{
+                            Text(modifier = Modifier.padding(10.dp),
+                                text = summaryPrize.item_name.truncateString(26),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 24.sp,
+                                color = MaterialTheme.colors.onBackground
+                            )
+                            Text(modifier = Modifier.padding(10.dp),
+                                text = summaryPrize.item_id.description!!.truncateString(32),
+                                fontSize = 18.sp,
+                                color = MaterialTheme.colors.onSurface
+                            )
+                        }
+
                         Box(
                             modifier = Modifier
                                 .align(Alignment.BottomStart)
@@ -99,11 +109,15 @@ fun ItemCard(summaryPrize: SummaryPrize, navigator: Navigator, viewModel: MainSc
                                 .wrapContentHeight()
                         ) {
                             var size by remember { mutableStateOf(IntSize.Zero) }
-                            Row(modifier = Modifier.fillMaxWidth().height(50.dp).fillMaxWidth()
+                            Box(modifier = Modifier.fillMaxWidth().height(50.dp).fillMaxWidth()
                                 .onSizeChanged {
                                 size = it
-                            },
-                                horizontalArrangement = Arrangement.End) {
+                            },) {
+                                Text(text = viewModel.categoryList[summaryPrize.item_id.category!!-1].name.truncateString(12),
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colors.onBackground,
+                                    modifier = Modifier.wrapContentWidth().padding(10.dp).align(Alignment.CenterStart),
+                                )
 //                                AutoResizedText(
 //                                    modifier = Modifier.padding(10.dp).fillMaxSize(),
 //                                    text =  summaryPrize.average_prize.addCommas() +" vnđ",
@@ -111,7 +125,7 @@ fun ItemCard(summaryPrize: SummaryPrize, navigator: Navigator, viewModel: MainSc
 //
 //                                )
                                 Text(
-                                    modifier = Modifier.wrapContentWidth().padding(10.dp),
+                                    modifier = Modifier.wrapContentWidth().padding(10.dp).align(Alignment.CenterEnd),
                                     text =  summaryPrize.average_prize.addCommas() +" vnđ",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = if(size.width > 300)24 else{18}.sp,

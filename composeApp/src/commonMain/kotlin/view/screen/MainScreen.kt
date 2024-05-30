@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,9 +62,10 @@ import view.composable.ItemCard
 import view.composable.ItemSearchBar
 import view.composable.ProfilePanel
 import viewModel.MainScreenViewModel
+import viewModel.ThemeViewModel
 
 
-class MainScreen : Screen {
+class MainScreen() : Screen {
     private val menuList = listOf<@Composable () -> Unit>(
         {DarkThemeToggle()},
         {SignOutButton()}
@@ -151,10 +153,9 @@ class MainScreen : Screen {
 
             }
             Box(Modifier.fillMaxWidth().height(60.dp)){
-//                Box(modifier = Modifier.align(Alignment.TopCenter).background(MaterialTheme.colors.primary).height(30.dp).fillMaxWidth())
-                Row(Modifier.fillMaxSize().background(MaterialTheme.colors.surface).height(30.dp)) {
-//                    Box(modifier = Modifier.align(Alignment.CenterVertically).background(MaterialTheme.colors.surface).height(30.dp).fillMaxWidth(0.6f))
-                    ItemSearchBar(modifier = Modifier.fillMaxWidth(0.8f).align(Alignment.CenterVertically)
+                Box(modifier = Modifier.align(Alignment.BottomCenter).background(MaterialTheme.colors.surface).height(30.dp).fillMaxWidth())
+                Row{
+                    ItemSearchBar(modifier = Modifier.fillMaxWidth().align(Alignment.CenterVertically)
                         .height(60.dp)
                         .clip(RoundedCornerShape(100.dp)),
                         viewModel = viewModel,
@@ -164,8 +165,9 @@ class MainScreen : Screen {
                                 viewModel.querryForItemList()
                             }
                         })
-                    Filter(modifier = Modifier.align(Alignment.CenterVertically))
+
                 }
+
             }
             Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colors.surface),
             ){
@@ -212,7 +214,7 @@ class MainScreen : Screen {
         }
     }
     @Composable
-    fun DarkThemeToggle(){
+    fun DarkThemeToggle(themeViewModel: ThemeViewModel? = null){
         var checked by remember { mutableStateOf(false) }
         Row(modifier = Modifier.fillMaxSize()
         ){
@@ -228,10 +230,10 @@ class MainScreen : Screen {
                 onCheckedChange = {
                     checked = it
 //                    changeDarkTheme()
+
                 }
             )
         }
-
     }
     @Composable
     fun SignOutButton(){

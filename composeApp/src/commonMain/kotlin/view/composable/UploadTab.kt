@@ -1,6 +1,7 @@
 package view.composable
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -20,13 +21,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -41,14 +45,29 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.Navigator
+import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePicker
+import com.mohamedrejeb.calf.ui.datepicker.rememberAdaptiveDatePickerState
+import dev.darkokoa.datetimewheelpicker.WheelDatePicker
+import dev.darkokoa.datetimewheelpicker.WheelDateTimePicker
+import dev.darkokoa.datetimewheelpicker.core.TimeFormat
+import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
+import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.user.UserInfo
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.put
 import model.Item
 import model.Seller
 import model.SubmitableEntry
@@ -62,9 +81,10 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
     val composableScope = rememberCoroutineScope()
     var priceText by remember { mutableStateOf("") }
     var sellerText by remember { mutableStateOf("") }
-    var dayText by remember { mutableStateOf("") }
-    var monthText by remember { mutableStateOf("") }
-    var yearText by remember { mutableStateOf("") }
+//    var dayText by remember { mutableStateOf("") }
+//    var monthText by remember { mutableStateOf("") }
+//    var yearText by remember { mutableStateOf("") }
+    var expiredDay = LocalDate(2050,1,1)
     var sellerListShow by remember { mutableStateOf(false) }
     var submitButtonVisible by remember { mutableStateOf(false) }
     val throwPopup = remember { mutableStateOf(false) }
@@ -76,15 +96,18 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
         expired_date = LocalDate(dayOfMonth = 1, monthNumber = 1, year = 1),
         price = 0
     )
-    println("$priceText;$dayText$seller_id")
-    if(seller_id==null || priceText.isEmpty()|| dayText.isEmpty() || monthText.isEmpty()|| yearText.isEmpty()){
+//    println("$priceText;$dayText$seller_id")
+    if(seller_id==null || priceText.isEmpty()
+//        || dayText.isEmpty() || monthText.isEmpty()|| yearText.isEmpty()
+        ){
         submitButtonVisible = false
     }else{
         entry = SubmitableEntry(
             item_id = item_id,
             seller_id = seller_id!! ,
             user_id = userInfo.id,
-            expired_date = LocalDate(dayOfMonth = dayText.toInt(), monthNumber = monthText.toInt(), year = yearText.toInt()),
+//            expired_date = LocalDate(dayOfMonth = dayText.toInt(), monthNumber = monthText.toInt(), year = yearText.toInt()),
+            expired_date = expiredDay,
             price = priceText.toInt()
         )
         submitButtonVisible = true
@@ -205,46 +228,61 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
                     fontSize = 20.sp)
 
             }
-            Row(modifier = Modifier.height(70.dp).fillMaxWidth()){
+            Row(modifier = Modifier.height(110.dp).fillMaxWidth()){
+
                 Text(modifier = Modifier.align(Alignment.CenterVertically),
                     text = "Price expire date: ",
                     color = Color.Black,
                     fontSize = 24.sp)
-                CustomTextField(
-                    modifier = Modifier.width(60.dp),
-                    value = dayText,
-                    onValueChange = { if(it.all { char -> char.isDigit() }&& it.length<=2){ dayText=it}},
-                    textStyle = TextStyle(
-                        fontSize = 24.sp,
-                        textAlign = TextAlign.End),
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+                WheelDatePicker(
+                    size = DpSize(200.dp, 110.dp),
+                    rowCount = 5,
+                    textStyle = TextStyle(fontSize = 24.sp),
+                    textColor = MaterialTheme.colors.onBackground,
+                    selectorProperties = WheelPickerDefaults.selectorProperties(
+                        enabled = true,
+                        shape = RoundedCornerShape(0.dp),
+                        color = Color(0xFFf1faee).copy(alpha = 0.2f),
+                        border = BorderStroke(2.dp, Color(0xFFf1faee))
                     )
-                Text(modifier = Modifier.align(Alignment.CenterVertically),
-                    text = "/",
-                    color = Color(0xFF8F00FF),
-                    fontSize = 26.sp)
-                CustomTextField(
-                    modifier = Modifier.width(60.dp),
-                    value = monthText,
-                    onValueChange = { if(it.all { char -> char.isDigit() }&& it.length<=2){ monthText=it}},
-                    textStyle = TextStyle(
-                        fontSize = 24.sp,
-                        textAlign = TextAlign.End),
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-                    )
-                Text(modifier = Modifier.align(Alignment.CenterVertically),
-                    text = "/",
-                    color = Color(0xFF8F00FF),
-                    fontSize = 26.sp)
-                CustomTextField(
-                    modifier = Modifier.width(120.dp),
-                    value = yearText,
-                    onValueChange = { if(it.all{ char -> char.isDigit() } && it.length<=4){ yearText=it}},
-                    textStyle = TextStyle(
-                        fontSize = 24.sp,
-                        textAlign = TextAlign.End),
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-                    )
+                ) { snappedDate ->
+                    expiredDay = snappedDate
+                }
+//                CustomTextField(
+//                    modifier = Modifier.width(60.dp),
+//                    value = dayText,
+//                    onValueChange = { if(it.all { char -> char.isDigit() }&& it.length<=2){ dayText=it}},
+//                    textStyle = TextStyle(
+//                        fontSize = 24.sp,
+//                        textAlign = TextAlign.End),
+//                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+//                    )
+//                Text(modifier = Modifier.align(Alignment.CenterVertically),
+//                    text = "/",
+//                    color = Color(0xFF8F00FF),
+//                    fontSize = 26.sp)
+//                CustomTextField(
+//                    modifier = Modifier.width(60.dp),
+//                    value = monthText,
+//                    onValueChange = { if(it.all { char -> char.isDigit() }&& it.length<=2){ monthText=it}},
+//                    textStyle = TextStyle(
+//                        fontSize = 24.sp,
+//                        textAlign = TextAlign.End),
+//                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+//                    )
+//                Text(modifier = Modifier.align(Alignment.CenterVertically),
+//                    text = "/",
+//                    color = Color(0xFF8F00FF),
+//                    fontSize = 26.sp)
+//                CustomTextField(
+//                    modifier = Modifier.width(120.dp),
+//                    value = yearText,
+//                    onValueChange = { if(it.all{ char -> char.isDigit() } && it.length<=4){ yearText=it}},
+//                    textStyle = TextStyle(
+//                        fontSize = 24.sp,
+//                        textAlign = TextAlign.End),
+//                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
+//                    )
 
             }
             Spacer(Modifier.height(10.dp))
@@ -260,6 +298,7 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
                                 if(item_id != null){
                                     SupabaseService.supabase.from("entry").insert(entry)
                                     throwPopup.value = true
+
                                 }else{
                                     if( submitableItem != null){
                                         SupabaseService.supabase.from("item").insert(submitableItem)
@@ -267,10 +306,13 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
                                             filter { submitableItem.name?.let { eq("name", value = it) } }
                                         }.decodeSingle<Item>().id
                                         println(entry)
-                                        SupabaseService.supabase.from("entry").insert(entry)
+                                        throwPopup.value = true
+
 
                                     }
                                 }
+//                                SupabaseService.supabase.from("entry").insert(entry)
+                                SupabaseService.ChangeCashmicoin(5)
                             }
                         }){
                             Text(

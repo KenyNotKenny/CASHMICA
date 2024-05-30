@@ -21,8 +21,9 @@ import model.SupabaseService
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import viewModel.ThemeViewModel
 
-class LoadingScreen: Screen {
+class LoadingScreen(): Screen {
 
     @OptIn(ExperimentalResourceApi::class)
     @Composable

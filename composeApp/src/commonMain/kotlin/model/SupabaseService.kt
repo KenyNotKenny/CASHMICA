@@ -9,6 +9,9 @@ import io.github.jan.supabase.postgrest.PropertyConversionMethod
 import io.github.jan.supabase.storage.Storage
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.put
 import kotlin.time.Duration.Companion.seconds
 
 class SupabaseService {
@@ -27,7 +30,17 @@ class SupabaseService {
             }
         }
         suspend fun getCurrentUser():UserInfo = supabase.auth.retrieveUserForCurrentSession(updateSession = true)
+        suspend fun ChangeCashmicoin(amount:Int){
+            var coin:Int  = Json.decodeFromJsonElement(getCurrentUser()?.userMetadata?.get("cashmicoin")!!)
+            SupabaseService.supabase.auth.updateUser {
+                data {
+                    put("cashmicoin", coin + amount )
+                }
+            }
+        }
     }
+
+
 }
 @Serializable
 data class SummaryPrize(
@@ -58,6 +71,8 @@ data class Item(
     val id: Int,
     val name: String,
     val image: String?,
+    val description: String?,
+    var category: Int?,
 )
 @Serializable
 data class SubmitableItem(
