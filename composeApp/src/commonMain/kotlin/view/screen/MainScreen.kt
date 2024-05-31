@@ -179,29 +179,32 @@ class MainScreen() : Screen {
             Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colors.surface),
             ){
                 Spacer(modifier = Modifier.size(20.dp))
-                LazyColumn(modifier = Modifier.padding(horizontal = 10.dp)){
-                    items(itemList){ item ->
-                        Spacer(modifier = Modifier.size(20.dp))
-                        ItemCard(summaryPrize = item, navigator = navigator, viewModel = viewModel, onClick = { itemPanelVisible = true })
-                    }
-                    item {
-                        Spacer(modifier = Modifier.size(20.dp))
-                        Box(Modifier.fillMaxWidth()){
-                            Button(
-                                modifier = Modifier.height(60.dp).wrapContentWidth().align(Alignment.Center),
-                                shape = RoundedCornerShape(30.dp),
-                                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
-                                onClick = { navigator.push(CreateItemSrceen(navigator,viewModel.userInfo)) }){
-                                Text(
-                                    text ="Add item",
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colors.background
-                                )
+                AnimatedVisibility(!firstSearch){
+                    LazyColumn(modifier = Modifier.padding(horizontal = 10.dp)){
+                        items(itemList){ item ->
+                            Spacer(modifier = Modifier.size(20.dp))
+                            ItemCard(summaryPrize = item, navigator = navigator, viewModel = viewModel, onClick = { itemPanelVisible = true })
+                        }
+                        item {
+                            Spacer(modifier = Modifier.size(20.dp))
+                            Box(Modifier.fillMaxWidth()){
+                                Button(
+                                    modifier = Modifier.height(60.dp).wrapContentWidth().align(Alignment.Center),
+                                    shape = RoundedCornerShape(30.dp),
+                                    colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary),
+                                    onClick = { navigator.push(CreateItemSrceen(navigator,viewModel.userInfo)) }){
+                                    Text(
+                                        text ="Add item",
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colors.background
+                                    )
+                                }
                             }
                         }
                     }
                 }
+
             }
         }
     }
