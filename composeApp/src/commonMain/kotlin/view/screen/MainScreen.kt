@@ -68,7 +68,8 @@ import viewModel.ThemeViewModel
 class MainScreen() : Screen {
     private val menuList = listOf<@Composable () -> Unit>(
         {DarkThemeToggle()},
-        {SignOutButton()}
+        {EarnCashmicoinButton()},
+        {SignOutButton()},
     )
 
     @Composable
@@ -114,17 +115,23 @@ class MainScreen() : Screen {
                     ) {
                         menuList.forEachIndexed { index, composable ->
                             DropdownMenuItem(onClick = {
-                                if(index == 1){
-                                    navigator.replace(LoginScreen())
-                                    composableScope.launch {
-                                        try {
-                                            SupabaseService.supabase.auth.signOut()
-                                            SupabaseService.supabase.auth.clearSession()
-                                        }
-                                        catch (e: Exception){
-                                            println("Sign out error")
+                                when(index){
+                                    1 ->{
+                                        navigator.push(VerifyEntryScreen(navigator))
+                                    }
+                                    2 ->{
+                                        navigator.replace(LoginScreen())
+                                        composableScope.launch {
+                                            try {
+                                                SupabaseService.supabase.auth.signOut()
+                                                SupabaseService.supabase.auth.clearSession()
+                                            }
+                                            catch (e: Exception){
+                                                println("Sign out error")
+                                            }
                                         }
                                     }
+
                                 }
                                 openMenu = false
                             }) {
@@ -238,5 +245,10 @@ class MainScreen() : Screen {
     @Composable
     fun SignOutButton(){
         Text("Sign out")
+    }
+    @Composable
+    fun EarnCashmicoinButton(){
+        Text(
+            text ="Earn CASHMICOIN")
     }
 }

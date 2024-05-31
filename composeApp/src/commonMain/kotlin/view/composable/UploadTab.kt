@@ -2,6 +2,7 @@ package view.composable
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -41,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -49,6 +51,13 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.Navigator
+import com.mohamedrejeb.calf.core.LocalPlatformContext
+import com.mohamedrejeb.calf.io.KmpFile
+import com.mohamedrejeb.calf.io.getPath
+import com.mohamedrejeb.calf.io.readByteArray
+import com.mohamedrejeb.calf.picker.FilePickerFileType
+import com.mohamedrejeb.calf.picker.FilePickerSelectionMode
+import com.mohamedrejeb.calf.picker.rememberFilePickerLauncher
 import com.mohamedrejeb.calf.ui.datepicker.AdaptiveDatePicker
 import com.mohamedrejeb.calf.ui.datepicker.rememberAdaptiveDatePickerState
 import dev.darkokoa.datetimewheelpicker.WheelDatePicker
@@ -59,6 +68,7 @@ import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.user.UserInfo
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
@@ -68,11 +78,15 @@ import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.put
+import model.EntrytDetail
 import model.Item
+import model.PendingEntry
 import model.Seller
 import model.SubmitableEntry
 import model.SubmitableItem
 import model.SupabaseService
+
+private var proofImage:KmpFile? = null
 
 @Composable
 fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, submitableItem:SubmitableItem? = null ){
@@ -94,10 +108,13 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
         seller_id = 1 ,
         user_id = userInfo!!.id,
         expired_date = LocalDate(dayOfMonth = 1, monthNumber = 1, year = 1),
-        price = 0
+        price = 0,
+
     )
-//    println("$priceText;$dayText$seller_id")
-    if(seller_id==null || priceText.isEmpty()
+
+    var imagePath:String by remember { mutableStateOf("") }
+    println(proofImage)
+    if(seller_id==null || priceText.isEmpty() || proofImage == null
 //        || dayText.isEmpty() || monthText.isEmpty()|| yearText.isEmpty()
         ){
         submitButtonVisible = false
@@ -248,43 +265,46 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
                 ) { snappedDate ->
                     expiredDay = snappedDate
                 }
-//                CustomTextField(
-//                    modifier = Modifier.width(60.dp),
-//                    value = dayText,
-//                    onValueChange = { if(it.all { char -> char.isDigit() }&& it.length<=2){ dayText=it}},
-//                    textStyle = TextStyle(
-//                        fontSize = 24.sp,
-//                        textAlign = TextAlign.End),
-//                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-//                    )
-//                Text(modifier = Modifier.align(Alignment.CenterVertically),
-//                    text = "/",
-//                    color = Color(0xFF8F00FF),
-//                    fontSize = 26.sp)
-//                CustomTextField(
-//                    modifier = Modifier.width(60.dp),
-//                    value = monthText,
-//                    onValueChange = { if(it.all { char -> char.isDigit() }&& it.length<=2){ monthText=it}},
-//                    textStyle = TextStyle(
-//                        fontSize = 24.sp,
-//                        textAlign = TextAlign.End),
-//                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-//                    )
-//                Text(modifier = Modifier.align(Alignment.CenterVertically),
-//                    text = "/",
-//                    color = Color(0xFF8F00FF),
-//                    fontSize = 26.sp)
-//                CustomTextField(
-//                    modifier = Modifier.width(120.dp),
-//                    value = yearText,
-//                    onValueChange = { if(it.all{ char -> char.isDigit() } && it.length<=4){ yearText=it}},
-//                    textStyle = TextStyle(
-//                        fontSize = 24.sp,
-//                        textAlign = TextAlign.End),
-//                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-//                    )
+
 
             }
+            val context = LocalPlatformContext.current
+            Row(modifier = Modifier.fillMaxWidth())
+            {
+                Text(modifier = Modifier.align(Alignment.CenterVertically),
+                    text = "Image proof: ",
+                    color = Color.Black,
+                    fontSize = 24.sp)
+                val scope = rememberCoroutineScope()
+                val pickerLauncher = rememberFilePickerLauncher(
+                    type = FilePickerFileType.Image,
+                    selectionMode = FilePickerSelectionMode.Single,
+                    onResult = { files ->
+                        scope.launch {
+                            files.firstOrNull()?.let { file ->
+                                // Do something with the selected file
+                                // You can get the ByteArray of the file
+                                proofImage = file
+                                imagePath = file.getPath(context)!!
+                            }
+                        }
+                    }
+                )
+
+                Text(
+                    modifier = Modifier.clickable {
+                        pickerLauncher.launch()
+                    },
+                    text = "Browse",
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF8F00FF),
+                    fontSize = 24.sp)
+            }
+            Spacer(Modifier.height(10.dp))
+            Text(modifier = Modifier.align(Alignment.Start),
+                text = if(imagePath.isNotEmpty()){"Selected file: "+imagePath}else{""},
+                color = Color.Black,
+                fontSize = 24.sp)
             Spacer(Modifier.height(10.dp))
 
             AnimatedVisibility(submitButtonVisible){
@@ -296,7 +316,12 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
                         Box(modifier = Modifier.fillMaxSize().background(Color(0xFF8F00FF)).clickable {
                             composableScope.launch {
                                 if(item_id != null){
-                                    SupabaseService.supabase.from("entry").insert(entry)
+                                    val pendingEntry = SupabaseService.supabase.from("pending_entry").insert(entry){
+                                        select(columns = Columns.list("id, item_id(id, name, image, description, category), user_id, price"))
+                                    }.decodeSingle<PendingEntry>()
+                                    val bucket = SupabaseService.supabase.storage.from("entry_image")
+                                    bucket.upload("${pendingEntry.id}.png", proofImage!!.readByteArray(context), upsert = true)
+//                                    SupabaseService.supabase.storage.from("entry_image").publicUrl("$entry_id.png")
                                     throwPopup.value = true
 
                                 }else{
@@ -306,12 +331,12 @@ fun UploadTab(navigator: Navigator , userInfo: UserInfo?, item_id: Int? = null, 
                                             filter { submitableItem.name?.let { eq("name", value = it) } }
                                         }.decodeSingle<Item>().id
                                         println(entry)
+                                        SupabaseService.supabase.from("entry").insert(entry)
                                         throwPopup.value = true
 
 
                                     }
                                 }
-//                                SupabaseService.supabase.from("entry").insert(entry)
                                 SupabaseService.ChangeCashmicoin(5)
                             }
                         }){

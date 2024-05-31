@@ -6,6 +6,7 @@ import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.user.UserInfo
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.PropertyConversionMethod
+import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.storage.Storage
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
@@ -38,6 +39,17 @@ class SupabaseService {
                 }
             }
         }
+        suspend fun setApproval(id: Int,amount: Int){
+            supabase.from("verification").update(
+                {
+                    VerifyEntry::approval_count setTo amount
+                }
+            ) {
+                filter {
+                    eq("id", id)
+                }
+            }
+        }
     }
 
 
@@ -59,6 +71,13 @@ data class EntrytDetail(
     val price: Int,
 )
 @Serializable
+data class PendingEntry(
+    val id:Int,
+    var item_id: Item,
+    val user_id: String,
+    val price: Int,
+)
+@Serializable
 data class SubmitableEntry(
     var item_id: Int?,
     val seller_id: Int,
@@ -66,6 +85,7 @@ data class SubmitableEntry(
     val expired_date: LocalDate?,
     val price: Int,
 )
+
 @Serializable
 data class Item(
     val id: Int,
@@ -99,4 +119,10 @@ data class SubmitableSeller(
 data class Category(
     val id: Int,
     val name: String,
+)
+@Serializable
+data class VerifyEntry(
+    val pending_entry_id: PendingEntry,
+    var approval_count: Int,
+
 )
