@@ -94,6 +94,10 @@ data class Item(
     val description: String?,
     var category: Int?,
 )
+
+@Serializable
+data class ItemId(val id: Int)
+
 @Serializable
 data class SubmitableItem(
     var name: String?,

@@ -58,7 +58,8 @@ fun ItemSearchBar(modifier: Modifier, onClick: () -> Unit, viewModel: MainScreen
                         contentDescription = "Search icon",
                         tint = MaterialTheme.colors.onBackground
                     )
-                    Filter(modifier = Modifier.align(Alignment.CenterVertically).background(Color.White))
+                    Filter(modifier = Modifier.align(Alignment.CenterVertically).background(Color.White),
+                           viewModel=viewModel)
 
                 }
 

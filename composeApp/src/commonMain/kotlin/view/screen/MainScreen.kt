@@ -170,6 +170,7 @@ class MainScreen() : Screen {
                             composableScope.launch{
                                 viewModel.setFirstSearch(false)
                                 viewModel.querryForItemList()
+                                println("selectedItemIdStateFlow: "+viewModel.selectedItemIdStateFlow.value)
                             }
                         })
 

@@ -7,21 +7,30 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import com.hoc081098.kmp.viewmodel.compose.kmpViewModel
 import com.hoc081098.kmp.viewmodel.createSavedStateHandle
 import com.hoc081098.kmp.viewmodel.viewModelFactory
-import model.Category
-import viewModel.CategoryViewModel
+import model.Item
+import viewModel.FilterViewModel
+import viewModel.MainScreenViewModel
 
 @Composable
-fun Filter(modifier: Modifier) {
+fun Filter(modifier: Modifier,viewModel: MainScreenViewModel) {
     var expanded by remember { mutableStateOf(false) }
-    val viewModel: CategoryViewModel = kmpViewModel(
+    val viewModel1: FilterViewModel = kmpViewModel(
         factory = viewModelFactory {
-            CategoryViewModel(savedStateHandle = createSavedStateHandle(), Category)
+            FilterViewModel(savedStateHandle = createSavedStateHandle(), Item)
         }
     )
+
+//    val viewModel: MainScreenViewModel = kmpViewModel(
+//        factory = viewModelFactory {
+//            MainScreenViewModel(savedStateHandle = createSavedStateHandle())
+//        }
+//    )
+
+    val categoryList by remember { mutableStateOf(viewModel.categoryList) }
+
     Box(
 //            .wrapContentSize(LineHeightStyle.Alignment.TopEnd)
     ) {
@@ -37,14 +46,17 @@ fun Filter(modifier: Modifier) {
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            viewModel.categoryNames.forEach{
-                item->
+            categoryList.forEach { category ->
                 DropdownMenuItem(
                     onClick = {
-                        expanded=false
+                        viewModel1.setSelectedCategory(category.id)
+                        println("selectedCategoryStateFlow: "+viewModel1.selectedCategoryStateFlow.value)
+                        println("itemListStateFlow: "+viewModel1.itemListStateFlow.value)
+                        viewModel.setItemId(viewModel1.itemListStateFlow.value)
+                        expanded = false
                     }
-                ){
-                    Text(text = item)
+                ) {
+                    Text(text = category.name)
                 }
             }
         }
